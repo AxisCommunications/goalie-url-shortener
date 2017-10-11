@@ -1,0 +1,5 @@
+[localhost]
+127.0.0.1 ansible_connection=local
+
+[go-api-service]
+172.25.162.119 ansible_user=tools
