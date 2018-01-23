@@ -9,8 +9,13 @@ from functools import partial
 from flask_jwt_extended import (JWTManager)
 
 from logging import FileHandler
+from os import environ
 
-token_auth = APITokenAuthenticator()
+if environ.get('API_TEST') is not None and environ.get('API_TEST') == 'True':
+    from tests.mock_api import APIMockTokenAuthenticator
+    token_auth = APIMockTokenAuthenticator()
+else:
+    token_auth = APITokenAuthenticator()
 app = Eve(template_folder='/root', auth=token_auth)
 app.validator = partial(PatternValidator, app)
 token_auth.jwt_app(app)

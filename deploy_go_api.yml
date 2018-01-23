@@ -41,6 +41,7 @@
         recreate: yes
         env:
           UWSGI_INI: "/app/go_service/uwsgi.ini"
+          API_TEST: "{{ api_test | default(False, False) }}"
         networks:
           - name: "{{ go_network.name }}"
         published_ports:

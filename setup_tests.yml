@@ -1,0 +1,72 @@
+---
+- hosts: localhost
+  become: true
+  tasks: 
+    # TEST SETUP 
+    - name: Create temporary tests directory
+      command: mktemp -d
+      register: test_dir
+   
+    - name: Create the test variables
+      template:
+        src: "tests/templates/all"
+        dest: tests/test_variables
+        mode: "u=rw,g=r,o=r"
+
+    - name: Setup the environment
+      include_vars:
+        file: "tests/test_variables"
+        
+    - name: Create necessary directories for the go service.
+      file:
+        path: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+        state: "{{ item.state }}"
+      with_items:
+        - { dest: "{{ go.logs_dir }}", mode: "u=rwx,g=rx,o=rx", state: directory }
+        - { dest: "{{ go.home }}/conf", mode: "u=rwx,g=rx,o=rx", state: directory }
+        - { dest: "{{ go.home }}/tests", mode: "u=rwx,g=rx,o=rx", state: directory }
+
+    - name: Create the test network
+      docker_network: 
+        name: "{{ go_network.name }}"
+        ipam_options:
+          subnet: "{{ go_network.subnet }}"
+          gateway: "{{ go_network.gateway }}"
+
+    - name: Create temporary user
+      user:
+        name: go
+        group: sudo
+        system: yes
+        createhome: no
+        shell: /bin/bash
+        uid: "{{ go.uid }}"
+    
+    - name: Provide the Dockerfile
+      template:
+        src: "templates/dockerfile_backend_template.j2"
+        dest: "{{ test_dir.stdout }}/Dockerfile"
+        mode: "u=rw,g=r,o=r"
+        owner: go
+        group: sudo
+
+    - name: Build the go service.
+      docker_image:
+        buildargs:
+          https_proxy: "{{ company_proxy }}"
+          http_proxy: "{{ company_proxy }}"
+          HTTP_PROXY: "{{ company_proxy }}"
+          HTTPS_PROXY: "{{ company_proxy }}"
+        name: go-service
+        path: "{{ test_dir.stdout }}"
+        state: present
+        tag: latest
+        push: no
+        force: yes
+
+- import_playbook: deploy_go_mongo.yml
+- import_playbook: deploy_go_api.yml
+- import_playbook: deploy_go_service.yml
+
+    # END OF TEST SETUP
