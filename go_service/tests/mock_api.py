@@ -1,22 +1,21 @@
 import copy
-import jwt
 import re
 import secrets
-import time
 import sys
+import time
 
-from eve.io.mongo import Validator
+import jwt
 from eve.auth import BasicAuth, TokenAuth
-from flask import abort, request, Response, jsonify
+from eve.io.mongo import Validator
+from flask import Response, abort, jsonify, request
 from flask_cors import cross_origin
-from ldap3 import Server, Connection, SUBTREE, ALL_ATTRIBUTES, ALL
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                get_jwt_identity, jwt_refresh_token_required,
+                                jwt_required)
+from ldap3 import ALL, ALL_ATTRIBUTES, SUBTREE, Connection, Server
 from ldap3.core.connection import SIMPLE, SYNC
 from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 
-from flask_jwt_extended import (
-        jwt_required, get_jwt_identity,
-        create_access_token, create_refresh_token,
-        jwt_refresh_token_required)
 
 class APIMockTokenAuthenticator(TokenAuth):
     """

@@ -7,11 +7,12 @@ which the service then redirects to.
 """
 import logging
 import re
+from functools import partial
 
 from flask import Flask, abort, redirect
-from functools import partial
 from pymongo import MongoClient
 from werkzeug.routing import BaseConverter
+
 
 class AliasConverter(BaseConverter):
     """
@@ -77,7 +78,7 @@ class AliasConverter(BaseConverter):
 
         target = self.get_closest_match(found_aliases_n)
 
-        match_group = "\{\{[\d]+\}\}"
+        match_group = "\{\{[\d]+\}\}" #pylint: disable=anomalous-backslash-in-string
         found_groups = re.findall(match_group, target)
 
         if (len(found_groups) < len(alias_groups) - 1):

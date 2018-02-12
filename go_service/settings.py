@@ -25,8 +25,8 @@ LDAP_CN_MATCH = 'CN=([^,]+),.*'
 LDAP_TOOLS_ADMIN_GROUPS = ["cn=org-example,ou=role,ou=groups,dc=example,dc=com",
                            "cn=org-example,ou=role,ou=groups,dc=example,dc=com",
                            "cn=org-example,ou=role,ou=groups,dc=example,dc=com"]
-LDAP_AUTH_ENDPOINTS = {"api\/all": False,
-                       "api\/all\/.+": False,
+LDAP_AUTH_ENDPOINTS = {"api\/all": False, #pylint: disable=anomalous-backslash-in-string
+                       "api\/all\/.+": False, #pylint: disable=anomalous-backslash-in-string
                        "api": True}
 
 RESOURCE_METHODS = ['GET', 'PATCH', 'POST']
@@ -76,7 +76,7 @@ all_alias = {
     }
 
 get_ldapuser_alias = {
-        'url': 'api/all/<regex("[\w\s]+"):ldapuser>',
+        'url': 'api/all/<regex("[\w\s]+"):ldapuser>', #pylint: disable=anomalous-backslash-in-string
         'item_title': 'ldapuser/alias',
         'resource_methods': ['GET'],
         'datasource': {
