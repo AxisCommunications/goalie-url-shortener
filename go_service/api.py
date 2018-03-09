@@ -2,22 +2,20 @@
 API for the GO service.
 """
 
-import copy
 import re
 import secrets
 import time
+from string import whitespace
 
 import jwt
-from eve.auth import BasicAuth, TokenAuth
+from eve.auth import TokenAuth
 from eve.io.mongo import Validator
-from flask import Response, abort, jsonify, request
+from flask import abort, jsonify, request
 from flask_cors import cross_origin
 from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                get_jwt_identity, jwt_refresh_token_required,
                                 jwt_required)
 from ldap3 import ALL, ALL_ATTRIBUTES, SUBTREE, Connection, Server
 from ldap3.core.connection import SIMPLE, SYNC
-from ldap3.core.exceptions import LDAPInvalidCredentialsResult
 
 
 class PatternValidator(Validator):
@@ -28,44 +26,114 @@ class PatternValidator(Validator):
     def __init__(self, application, *args, **kwargs):
         super(PatternValidator, self).__init__(*args, **kwargs)
         self.app = application
+        self.allowed_capture = [r'\d+', r'\w+', r'\S+', r'\d', r'\w', r'\S']
+        datasource, _, _, _ = self.app.data.datasource(self.resource)
+        self.mongodb = self.app.data.driver.db[datasource]
 
-    def _validate_regex(self, check, field, value):
-        """
-        The validation function checks a pattern if its equal to any other
-        pattern in the database. It also checks if the pattern violates another
-        pattern. A violation is made if a pattern matches another pattern,
-        """
+    @staticmethod
+    def contains_whitespace(pattern):
+        """ Check if pattern contains whitespace characters. """
+        return any(character in pattern for character in whitespace)
+
+    @staticmethod
+    def contains_non_word_character(pattern):
+        """ Check if pattern contains non-word character. """
+        return bool(re.search(r'\W', pattern))
+
+    @staticmethod
+    def extract_capture_groups(pattern):
+        """ Extracts regex string inside the capture groups. """
+        return re.findall(r'\((.*?)\)', pattern)
+
+    @staticmethod
+    def invalid_first_capture_group(group):
+        """ The first capture group is only allowed word characters or '|' """
+        return group == '' or bool(re.search(r'[^a-zA-Z0-9_\|]', group))
+
+    @staticmethod
+    def extract_words(pattern):
+        """ Extracts whole words from pattern """
+        return re.findall(r'\b\w+\b', pattern)
+
+    def construct_search_query(self, search):
+        """ Constructs MongoDB query, with language set to none to reduce
+            unexpected behavior, also exludes itself if already exist.
+            The exclude is needed for the patch requests. """
+        query = {'$text': {'$search': search, '$language': 'none'}}
+        try:
+            id_field = self.app.config.get('ID_FIELD', '_id')
+            query[id_field] = {'$ne': self.document_id}
+        except AttributeError:
+            # document does not exist in database, this is safe to ignore
+            pass
+        return query
+
+    def valid_capture(self, group):
+        """ Check if the group is one of the allowed regex operations """
+        return group in self.allowed_capture
+
+    def valid_sub_points(self, expected_number):
+        """ Checks if the target has valid insertion numbers """
+        target = self.document.get('target')
+        insertion_locations = re.findall(r'\\(\d+)', target)
+        m = max([int(x) for x in insertion_locations])
+        return m >= 1 and m <= expected_number
+
+    def single_word_pattern(self, field, pattern):
+        """ Validate patterns consisting of single word """
+        if self.contains_non_word_character(pattern):
+            self._error(field, "Pattern must only contain word characters")
+        elif self.mongodb.find_one(self.construct_search_query(pattern)):
+            self._error(field, "Pattern must be unique")
+
+    def _validate_type_urlpattern(self, field, pattern):
+        """Custom cerberus validator for the schema type urlpattern"""
 
         try:
-            re.compile(value)
-            valid_regex = True
+            re.compile(pattern)
         except re.error:
-            valid_regex = False
+            self._error(field, "Pattern must be a valid python regex")
+            return
 
-        if not check and not valid_regex:
-            self._error(field, "Not a valid regex...")
-            return False
+        # check for capture groups in pattern
+        capture_groups = self.extract_capture_groups(pattern)
+        group_count = len(capture_groups)
 
-        dcopy = copy.copy(self.document)
+        if group_count == 0:
+            self.single_word_pattern(field, pattern)
+            if self._error:
+                return
 
-        target = dcopy['target'] # pylint: disable=unused-variable
-        ppattern = dcopy['pattern']
+        elif group_count == 1:
+            self._error(field, "Capture group support require more arguments")
+            return
 
-        alias_patterns = self.app.data.driver.db[self.app.config['MONGO_DBNAME']]
-        for doc in alias_patterns.find({}):
-            if doc['pattern']:
+        elif group_count > 1:
+            if self.invalid_first_capture_group(capture_groups[0]):
+                self._error(field, "First pattern group must only contain word "
+                            "characters split by '|'")
+                return
 
-                match_pattern = re.findall(ppattern, doc['pattern'])
-                if match_pattern and (match_pattern[0] == doc['pattern']):
-                    self._error(field, "Pattern {} too similar to: {}".format(ppattern, doc['pattern']))
-                    return False
+            for group in capture_groups[1:]:
+                if not self.valid_capture(group):
+                    self._error(field,
+                                'Pattern capture groups only allows {}'.format(
+                                    ' '.join(self.allowed_capture)))
+                    return
 
-                match_pattern = re.findall(doc['pattern'], ppattern)
-                if match_pattern and (match_pattern[0] == ppattern):
-                    self._error(field, "Pattern {} too similar to: {}".format(ppattern, doc['pattern']))
-                    return False
+            words = self.extract_words(capture_groups[0])
+            for word in words:
+                if self.mongodb.find_one(self.construct_search_query(word)):
+                    self._error(
+                        field, "{} not unique".format(word))
+                    return
 
-        return True
+            if not self.valid_sub_points(group_count):
+                self._error(field, "Mismatch between capture groups and target"
+                " insertion location")
+        if not self._error:
+            self._error(field, "Pattern not understood by server")
+
 
 class APITokenAuthenticator(TokenAuth):
     """
@@ -92,7 +160,7 @@ class APITokenAuthenticator(TokenAuth):
         headers = request.headers
         auth = headers['Authorization']
 
-        if (auth == "Bearer"):
+        if auth == "Bearer":
             abort(self.UNAUTHORIZED)
 
     def _decode_token(self):
@@ -107,7 +175,8 @@ class APITokenAuthenticator(TokenAuth):
         if auth:
             token = auth.split(" ")[1]
             try:
-                decoded_token = jwt.decode(token, self.app.config['JWT_SECRET_KEY'])
+                decoded_token = jwt.decode(
+                    token, self.app.config['JWT_SECRET_KEY'])
                 return decoded_token
             except:
                 abort(self.UNAUTHORIZED)
@@ -120,11 +189,12 @@ class APITokenAuthenticator(TokenAuth):
         """
         is_admin = False
         for group in self.admin_groups:
-            if connection.search(search_base=self.app.config['LDAP_AUTH_BASEDN'],
-                        search_filter=self.app.config['LDAP_GROUP_SEARCH_FILTER'].format(
-                            username, group),
-                        search_scope=SUBTREE,
-                        attributes=ALL_ATTRIBUTES):
+            if connection.search(
+                    search_base=self.app.config['LDAP_AUTH_BASEDN'],
+                    search_filter=self.app.config['LDAP_GROUP_SEARCH_FILTER'].format(
+                        username, group),
+                    search_scope=SUBTREE,
+                    attributes=ALL_ATTRIBUTES):
                 is_admin = True
                 break
         return is_admin
@@ -134,7 +204,8 @@ class APITokenAuthenticator(TokenAuth):
         Find the full name of a user.
         """
         connection.search(search_base=self.app.config['LDAP_AUTH_BASEDN'],
-                          search_filter=self.app.config['LDAP_SAMACCOUNT_FILTER'].format(user),
+                          search_filter=self.app.config['LDAP_SAMACCOUNT_FILTER'].format(
+                              user),
                           search_scope=SUBTREE,
                           attributes=ALL_ATTRIBUTES)
         if not connection.response:
@@ -160,7 +231,8 @@ class APITokenAuthenticator(TokenAuth):
                                     auto_bind=self.app.config['AUTH_LDAP_INITIAL_AS_USER'],
                                     raise_exceptions=True)
         except Exception:
-            self.app.logger.warning("Unable to establish connection to : {}".format(self.app.config['LDAP_SERVER']))
+            self.app.logger.warning("Unable to establish connection to : {}".format(
+                self.app.config['LDAP_SERVER']))
             return None
         return connection
 
@@ -168,21 +240,22 @@ class APITokenAuthenticator(TokenAuth):
         """
         Authenticate a user against a LDAP server.
         """
-        ldap_user = self.app.config['AUTH_LDAP_INITIAL_PATTERN'].format(username)
+        ldap_user = self.app.config['AUTH_LDAP_INITIAL_PATTERN'].format(
+            username)
 
         try:
             connection = self._get_ldap_connection(ldap_user, password)
             if not connection:
                 return ""
 
-            full_name = self._find_full_name(username,connection)
+            full_name = self._find_full_name(username, connection)
 
             if full_name:
                 identity = "{};{}".format(
-                            full_name,
-                            "user" if not self._is_in_admin_group(
-                                username, connection) else
-                                    "admin")
+                    full_name,
+                    "user" if not self._is_in_admin_group(
+                        username, connection) else
+                    "admin")
             else:
                 identity = ""
             connection.unbind()
@@ -221,9 +294,9 @@ class APITokenAuthenticator(TokenAuth):
 
         user = identity.split(';')[1]
         tokens = {
-                'rights': user,
-                'access_token': create_access_token(identity=identity),
-                'refresh_token': create_refresh_token(identity=identity)
+            'rights': user,
+            'access_token': create_access_token(identity=identity),
+            'refresh_token': create_refresh_token(identity=identity)
         }
         return jsonify(tokens), 200
 
@@ -235,7 +308,7 @@ class APITokenAuthenticator(TokenAuth):
         """
         current_user = ';'.join(self.get_user_and_group())
         tokens = {
-                'access_token': create_access_token(identity=current_user)
+            'access_token': create_access_token(identity=current_user)
         }
 
         return jsonify(tokens), 200
@@ -249,8 +322,8 @@ class APITokenAuthenticator(TokenAuth):
 
     def authorized(self, allowed_roles, resource, method):
         """
-        Search for endpoints that are allowed to be called without authentication.
-        Otherwise find the token and then authenticate.
+        Search for endpoints that are allowed to be called without
+        authentication. Otherwise find the token and then authenticate.
         """
         self._check_empty_token()
 
@@ -260,7 +333,9 @@ class APITokenAuthenticator(TokenAuth):
             if match.fullmatch(resource) and not auth_endpoints[res]:
                 return True
 
-        return super(APITokenAuthenticator, self).authorized(allowed_roles, resource, method)
+        return super(APITokenAuthenticator, self).authorized(allowed_roles,
+                                                             resource, method)
+
 
 class API:
     """
@@ -288,15 +363,17 @@ class API:
 
     def pre_patch(self, resource, request, lookup):
         """
-        Check which group a user belongs to. If in user, then filter out all entries that
-        belongs to the user. Users in the admin group can update all entries.
+        Check which group a user belongs to. If in user, then filter out all
+        entries that belongs to the user. Users in the admin group can update
+        all entries.
         """
         lookup = self.lookup_user(lookup)
 
     def pre_delete(self, resource, requestf, lookup):
         """
-        Check which group a user belongs to. If in user, then filter out all entries that
-        belongs to the user. Users in the admin group can delete all entries.
+        Check which group a user belongs to. If in user, then filter out all
+        entries that belongs to the user. Users in the admin group can delete
+        all entries.
         """
         lookup = self.lookup_user(lookup)
 

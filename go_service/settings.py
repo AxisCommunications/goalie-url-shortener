@@ -25,8 +25,8 @@ LDAP_CN_MATCH = 'CN=([^,]+),.*'
 LDAP_TOOLS_ADMIN_GROUPS = ["cn=org-example,ou=role,ou=groups,dc=example,dc=com",
                            "cn=org-example,ou=role,ou=groups,dc=example,dc=com",
                            "cn=org-example,ou=role,ou=groups,dc=example,dc=com"]
-LDAP_AUTH_ENDPOINTS = {"api\/all": False, #pylint: disable=anomalous-backslash-in-string
-                       "api\/all\/.+": False, #pylint: disable=anomalous-backslash-in-string
+LDAP_AUTH_ENDPOINTS = {"api\/all": False,  # pylint: disable=anomalous-backslash-in-string
+                       "api\/all\/.+": False,  # pylint: disable=anomalous-backslash-in-string
                        "api": True}
 
 RESOURCE_METHODS = ['GET', 'PATCH', 'POST']
@@ -48,58 +48,57 @@ CACHE_EXPIRES = 6
 LOGGING_LEVEL = logging.DEBUG
 
 schema = {
-            'pattern': {
-                'type': 'string',
-                'regex': True,
-                'required': True,
-                'unique': True
-            },
-            'target': {
-                'type': 'string',
+    'pattern': {
+        'type': 'urlpattern',
                 'required': True
-            },
-            'ldapuser': {
-                'type': 'string'
-                }
-        }
+                #'unique': True
+    },
+    'target': {
+        'type': 'string',
+                'required': True
+    },
+    'ldapuser': {
+        'type': 'string'
+    }
+}
 
 all_alias = {
-        'item_title': 'all',
-        'resource_methods': ['GET'],
-        'datasource': {
-            'source': 'aliases_db',
-            'projection': {
-                'pattern': 1,
-                'target': 1,
-                'ldapuser': 1}
-            }
+    'item_title': 'all',
+    'resource_methods': ['GET'],
+    'datasource': {
+        'source': 'aliases_db',
+        'projection': {
+            'pattern': 1,
+            'target': 1,
+            'ldapuser': 1}
     }
+}
 
 get_ldapuser_alias = {
-        'url': 'api/all/<regex("[\w\s]+"):ldapuser>', #pylint: disable=anomalous-backslash-in-string
-        'item_title': 'ldapuser/alias',
-        'resource_methods': ['GET'],
-        'datasource': {
-            'source': 'aliases_db'
-            },
-        'schema': schema
-        }
+    'url': 'api/all/<regex("[\w\s]+"):ldapuser>',  # pylint: disable=anomalous-backslash-in-string
+    'item_title': 'ldapuser/alias',
+    'resource_methods': ['GET'],
+    'datasource': {
+        'source': 'aliases_db'
+    },
+    'schema': schema
+}
 
 alias = {
-        'item_title': 'alias',
-        'resource_methods': ['POST'],
-        'item_methods': ['DELETE', 'PATCH', 'PUT'],
+    'item_title': 'alias',
+    'resource_methods': ['POST'],
+    'item_methods': ['DELETE', 'PATCH', 'PUT'],
     'mongo_indexes': {
         'text': [('pattern', 'text')]
     },
-        'datasource': {
-            'source': 'aliases_db'
-            },
-        'schema': schema
-        }
+    'datasource': {
+        'source': 'aliases_db'
+    },
+    'schema': schema
+}
 
 DOMAIN = {
-        'api/all': all_alias,
-        'api/all/user': get_ldapuser_alias,
-        'api': alias
+    'api/all': all_alias,
+    'api/all/user': get_ldapuser_alias,
+    'api': alias
 }
