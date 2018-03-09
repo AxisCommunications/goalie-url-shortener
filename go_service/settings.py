@@ -89,6 +89,9 @@ alias = {
         'item_title': 'alias',
         'resource_methods': ['POST'],
         'item_methods': ['DELETE', 'PATCH', 'PUT'],
+    'mongo_indexes': {
+        'text': [('pattern', 'text')]
+    },
         'datasource': {
             'source': 'aliases_db'
             },

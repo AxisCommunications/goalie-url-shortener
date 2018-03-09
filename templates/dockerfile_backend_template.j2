@@ -8,5 +8,5 @@ ENV HTTP_PROXY {{ company_proxy }}
 RUN apt-get update && apt-get install -y ldap-utils build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install flask-jwt-extended ldap3 eve pymongo flask-cors
+RUN pip install flask-jwt-extended ldap3 eve flask-cors Flask-PyMongo
 RUN adduser --system --disabled-password --home {{ go.home }} --uid {{ go.uid }} --ingroup root go
