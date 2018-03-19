@@ -1,0 +1,300 @@
+/* Personal Flavour */
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* lato-regular - latin-ext */
+@font-face {
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Lato Regular"), local("Lato-Regular"),
+    url("../fonts/lato-v14-latin-ext-regular.woff2") format("woff2"),
+    url("../fonts/lato-v14-latin-ext-regular.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+/* shrikhand-regular - latin-ext */
+@font-face {
+  font-family: "Shrikhand";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Shrikhand Regular"), local("Shrikhand-Regular"),
+    url("../fonts/shrikhand-v3-latin-ext-regular.woff2") format("woff2"),
+    url("../fonts/shrikhand-v3-latin-ext-regular.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+/* Typography */
+body {
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: #222222;
+  font-family: "Lato", "Raleway", Helvetica, Arial, sans-serif;
+}
+h1,
+h3 {
+  font-family: "Shrikhand", "Raleway", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+}
+h4 {
+  font-size: 22px;
+}
+h3 {
+  font-size: 28px;
+}
+
+/* Centering */
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+.vertical-centered {
+  position: absolute;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -moz-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  -o-transform: translateY(-50%);
+  transform: translateY(-50%);
+  width: 100%;
+}
+
+/* Separator */
+.separator {
+  position: relative;
+  margin-bottom: 1.2em;
+  padding-bottom: 1em;
+  text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: inherit;
+}
+.separator:before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 110px;
+  height: 1px;
+  background-color: #d1d1d1d1;
+
+  -webkit-transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  -o-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+
+/* Top buttons */
+div.button-group > button {
+  margin-left: 0.5em;
+  vertical-align: middle;
+}
+
+/* Form */
+form {
+  margin: 0;
+}
+
+/* Button icon */
+.button.icon {
+  padding: 0;
+  margin: -10px;
+  margin-right: 0.5em;
+  width: 2.5em;
+  height: 2.5em;
+  line-height: 1em;
+  border-radius: 30%;
+  text-align: center;
+  -webkit-box-sizing: content-box;
+  -ms-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+button:disabled {
+  background-color: #c9c9c9;
+  cursor: default;
+}
+
+button:disabled:hover {
+  color: #555;
+  border: 1px solid #bbb;
+}
+
+div.add-group > input.pattern {
+  width: 25%;
+  margin-right: 0.5em;
+}
+
+div.add-group > input.target {
+  width: 60%;
+}
+
+div.add-group > button.button.icon {
+  margin: 0;
+  vertical-align: middle;
+  padding: 2px;
+}
+
+div.add-group > button.button.icon.button-add-confirm {
+  margin-left: 1em;
+}
+
+div.add-group > button.button.icon.button-add-cancel {
+  margin-left: 0.5em;
+}
+
+/* Table item buttons edit */
+div.button-group > button.button.icon {
+  margin-left: -0.4em;
+}
+
+/* Table item fixed size */
+td.pattern {
+  max-width: 2vw;
+  overflow-wrap: break-word;
+}
+
+td.target {
+  max-width: 15vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+td.configure {
+  width: 30px;
+  max-width: 30px;
+  min-width: 30px;
+}
+
+/* Table item edit */
+input.shortcut-edit {
+  margin-right: 0;
+  margin-left: 0;
+  width: 100%;
+}
+
+div.container.footer {
+  height: 100px;
+}
+
+#login {
+  position: absolute;
+  top: 1vh;
+  right: 0;
+  width: 20em;
+  margin: 0 auto;
+  z-index: 10;
+}
+
+#login .credentials {
+  display: inline-block;
+  width: 100%;
+}
+
+#login .credentials input {
+  display: inline-block;
+  margin-right: 1%;
+  width: 49%;
+}
+
+#login .confirm {
+  width: 100%;
+}
+
+#login .confirm input.button.button-login {
+  margin-right: 1%;
+  margin-top: -1vh;
+  width: 49%;
+  float: right;
+}
+
+#login .confirm input.button.button-logout {
+  margin-right: 1em;
+  float: right;
+}
+
+div.error-message {
+  position: fixed;
+  top: 100px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+  z-index: 99;
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 15px 10px 0px 50px;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  color: #9f6000;
+  background-color: #feefb3;
+}
+
+.pagination ul {
+  display: inline-block;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.pagination li {
+  display: inline-block;
+  padding-left: 15px;
+  padding-right: 15px;
+  font-size: 30px;
+}
+
+.pagination li a {
+  cursor: pointer;
+}
+
+.pagination li.disabled a {
+  cursor: default;
+  color: lightgrey;
+}
+
+.pagination .break a {
+  cursor: default;
+}
+
+.pagination .active a {
+  color: grey;
+  font-size: 35px;
+}
+
+div .buttons {
+  width: 100%;
+}
+
+td input {
+  margin: -10px;
+  padding: 0px;
+  width: 80%;
+}
+
+input.valid:focus,
+input.valid {
+  border-color: lightgreen;
+}
+
+input.not-valid:focus,
+input.not-valid {
+  border-color: red;
+}
