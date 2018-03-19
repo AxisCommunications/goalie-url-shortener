@@ -36,9 +36,10 @@ class PatternValidator(Validator):
         return any(character in pattern for character in whitespace)
 
     @staticmethod
-    def contains_non_word_character(pattern):
-        """ Check if pattern contains non-word character. """
-        return bool(re.search(r'\W', pattern))
+    def contains_forbidden_character(pattern):
+        """ Check if pattern contains any characters different from word
+            charecters, '.', '_' or '-' """
+        return bool(re.search(r'[^\w._\-]', pattern))
 
     @staticmethod
     def extract_capture_groups(pattern):
@@ -48,24 +49,21 @@ class PatternValidator(Validator):
     @staticmethod
     def invalid_first_capture_group(group):
         """ The first capture group is only allowed word characters or '|' """
-        return group == '' or bool(re.search(r'[^a-zA-Z0-9_\|]', group))
+        return group == '' or bool(re.search(r'[^\w._\-\|]', group))
 
     @staticmethod
     def extract_words(pattern):
         """ Extracts whole words from pattern """
-        return re.findall(r'\b\w+\b', pattern)
+        return re.findall(r'\b[\w\.\_\-]+\b', pattern)
 
     def construct_search_query(self, search):
         """ Constructs MongoDB query, with language set to none to reduce
             unexpected behavior, also exludes itself if already exist.
             The exclude is needed for the patch requests. """
-        query = {'$text': {'$search': search, '$language': 'none'}}
-        try:
-            id_field = self.app.config.get('ID_FIELD', '_id')
-            query[id_field] = {'$ne': self.document_id}
-        except AttributeError:
-            # document does not exist in database, this is safe to ignore
-            pass
+        query = {'$text': {
+            '$search': '\"{}\"'.format(search)
+        }}
+        self.app.logger.error("Query: %s", query)
         return query
 
     def valid_capture(self, group):
@@ -76,19 +74,35 @@ class PatternValidator(Validator):
         """ Checks if the target has valid insertion numbers """
         target = self.document.get('target')
         insertion_locations = re.findall(r'\\(\d+)', target)
-        m = max([int(x) for x in insertion_locations])
-        return m >= 1 and m <= expected_number
+        max_num = max([int(x) for x in insertion_locations])
+        return max_num >= 1 and max_num <= expected_number
 
     def single_word_pattern(self, field, pattern):
         """ Validate patterns consisting of single word """
-        if self.contains_non_word_character(pattern):
+        if self.contains_forbidden_character(pattern):
             self._error(field, "Pattern must only contain word characters")
-        elif self.mongodb.find_one(self.construct_search_query(pattern)):
-            self._error(field, "Pattern must be unique")
+        if self.mongodb.find_one(self.construct_search_query(pattern)):
+            self._error(field, "Pattern {} must be unique".format(pattern))
+
+    def single_group_pattern(self, field, group):
+        """ Validate pattern if it contains a single capture group """
+        if self.invalid_first_capture_group(group):
+            self._error(field, "First pattern group must only contain "
+                        "words or multiple words split by '|'")
+            return
+        words = self.extract_words(group)
+        if len(words) < 2:
+            self._error(field, "Remove parentheses for single word")
+            return
+        self.app.logger.error("Words: %s", words)
+        for word in words:
+            self.single_word_pattern(field, word)
+            self.app.logger.error("error: %s", self.errors)
+            if any(self.errors):
+                return
 
     def _validate_type_urlpattern(self, field, pattern):
         """Custom cerberus validator for the schema type urlpattern"""
-
         try:
             re.compile(pattern)
         except re.error:
@@ -101,17 +115,14 @@ class PatternValidator(Validator):
 
         if group_count == 0:
             self.single_word_pattern(field, pattern)
-            if self._error:
-                return
 
         elif group_count == 1:
-            self._error(field, "Capture group support require more arguments")
-            return
+            self.single_group_pattern(field, capture_groups[0])
 
         elif group_count > 1:
             if self.invalid_first_capture_group(capture_groups[0]):
-                self._error(field, "First pattern group must only contain word "
-                            "characters split by '|'")
+                self._error(field, "First pattern group must only contain "
+                            "words or multiple words split by '|'")
                 return
 
             for group in capture_groups[1:]:
@@ -130,9 +141,7 @@ class PatternValidator(Validator):
 
             if not self.valid_sub_points(group_count):
                 self._error(field, "Mismatch between capture groups and target"
-                " insertion location")
-        if not self._error:
-            self._error(field, "Pattern not understood by server")
+                            " insertion location")
 
 
 class APITokenAuthenticator(TokenAuth):

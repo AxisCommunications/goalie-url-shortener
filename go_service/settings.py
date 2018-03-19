@@ -1,5 +1,4 @@
 import logging
-import os
 import ssl
 
 MONGO_HOST = 'mongodb'
@@ -50,12 +49,11 @@ LOGGING_LEVEL = logging.DEBUG
 schema = {
     'pattern': {
         'type': 'urlpattern',
-                'required': True
-                #'unique': True
+        'required': True
     },
     'target': {
         'type': 'string',
-                'required': True
+        'required': True
     },
     'ldapuser': {
         'type': 'string'
@@ -89,7 +87,8 @@ alias = {
     'resource_methods': ['POST'],
     'item_methods': ['DELETE', 'PATCH', 'PUT'],
     'mongo_indexes': {
-        'text': [('pattern', 'text')]
+        # Search index, language setting to avoid stemming and stop words
+        'text': ([('pattern', 'text')], {'default_language': 'none'})
     },
     'datasource': {
         'source': 'aliases_db'

@@ -5,7 +5,6 @@ Routes incoming alias by locating matching pattern and target in the database
 if the pattern is a capture group it uses standard regex substitution to
 construct the modified target from the incoming alias.
 """
-import logging
 import re
 from logging import Formatter
 from logging.handlers import RotatingFileHandler
@@ -14,48 +13,46 @@ from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
 
 # Initialize the application.
-app = Flask(__name__)
+app = Flask(__name__)  # pylint: disable=invalid-name
 app.config.from_pyfile('settings.py', silent=True)
-app.debug = True # For debugging purposes
+app.debug = True  # For debugging purposes
+MONGO = PyMongo(app)
 
 # Add logging capabilities.
-handler = RotatingFileHandler('/app/logs/go-service.log', maxBytes=10*1024*1024, backupCount=20)
-handler.setLevel(app.config['LOGGING_LEVEL'])
-handler.setFormatter(Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
-app.logger.addHandler(handler)
+HANDLER = RotatingFileHandler(
+    '/app/logs/go-service.log', maxBytes=10*1024*1024, backupCount=20)
+HANDLER.setLevel(app.config['LOGGING_LEVEL'])
+HANDLER.setFormatter(Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
+app.logger.addHandler(HANDLER)
 
-app.logger.debug("Service started")
-
-mongo = PyMongo(app)
 
 @app.route('/<path:alias>')
 def go_routing(alias):
-    app.logger.debug("Alias: {}".format(alias))
+    """ Takes alias and redirects user to target found in database. """
+    app.logger.debug("Alias: %s", alias)
 
-    search = alias.split('/', maxsplit=1)[0]
-    app.logger.debug("Search term: {}".format(search))
+    search = re.findall(r'\b[\w\.\_\-]+\b', alias)[0]
 
-    query = { # MongoDB query, language=none to reduce unexpected behavior
-        '$text': {
-            '$search': search,
-            '$language': 'none'
-        }
-    }
+    query = {'$text': {
+        '$search': r'"{}"'.format(search)
+    }}
+    app.logger.debug("Search: %s", query)
 
-    result = mongo.db.aliases_db.find_one_or_404(query)
-    app.logger.debug("Search result {}".format(result))
+    result = MONGO.db.aliases_db.find_one_or_404(query)
+    app.logger.debug("Search result %s", result)
 
-    if not re.match(r'\(.*\)', result['pattern']):
+    if len(re.findall(r'\((.*?)\)', result['pattern'])) <= 1:
         # no capture group -> no insertion into target needed
-        app.logger.debug("URL target: {}".format(result['target']))
+        app.logger.debug("URL target: %s", result['target'])
         return redirect(result['target'])
 
     elif re.match(result['pattern'], alias):
         # capture group successful -> insert into target
         app.logger.debug(
-            "Capture group target: {}".format(result['target']))
+            "Capture group target: %s", result['target'])
         target = re.sub(result['pattern'], result['target'], alias)
-        app.logger.debug("Constructed URL target: {}".format(target))
+        app.logger.debug("Constructed URL target: %s", target)
         return redirect(target)
 
     abort(404)
+    return redirect('localhost')  # Consistent return statement

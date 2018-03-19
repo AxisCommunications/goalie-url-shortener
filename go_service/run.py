@@ -15,6 +15,7 @@ if environ.get('API_TEST') is not None and environ.get('API_TEST') == 'True':
     token_auth = APIMockTokenAuthenticator()
 else:
     token_auth = APITokenAuthenticator()
+
 app = Eve(template_folder='/root', auth=token_auth)
 app.validator = partial(PatternValidator, app)
 token_auth.jwt_app(app)
