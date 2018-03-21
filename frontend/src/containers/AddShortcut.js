@@ -1,6 +1,5 @@
 import { connect } from "react-redux";
 import React, { Component } from "react";
-import safe from "safe-regex";
 
 import IconButton from "../components/IconButton";
 import InputField from "../components/InputField";
@@ -49,7 +48,7 @@ class AddShortcut extends Component {
         case "pattern":
           try {
             new RegExp(value);
-            if (safe(value) && value.length > 0) {
+            if (value.length > 0) {
               this.setState({ patternValid: "valid" });
             } else {
               this.setState({ patternValid: "not-valid" });

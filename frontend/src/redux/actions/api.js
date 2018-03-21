@@ -6,7 +6,7 @@ import safe from "safe-regex";
 
 // Setup basic api configuration
 export const api = axios.create({
-  baseURL: "https://user.example.com/",
+  baseURL: "https://go2.company.com/",
   timeout: 5000
 });
 

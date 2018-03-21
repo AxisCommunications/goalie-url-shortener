@@ -137,12 +137,12 @@ button:disabled:hover {
 }
 
 div.add-group > input.pattern {
-  width: 25%;
+  width: 38%;
   margin-right: 0.5em;
 }
 
 div.add-group > input.target {
-  width: 60%;
+  width: 43%;
 }
 
 div.add-group > button.button.icon {
@@ -166,12 +166,12 @@ div.button-group > button.button.icon {
 
 /* Table item fixed size */
 td.pattern {
-  max-width: 2vw;
+  max-width: 7vw;
   overflow-wrap: break-word;
 }
 
 td.target {
-  max-width: 15vw;
+  max-width: 10vw;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

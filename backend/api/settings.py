@@ -4,7 +4,7 @@ import ssl
 MONGO_HOST = 'db'
 MONGO_PORT = 27028
 MONGO_DBNAME = 'aliases_db'
-MONGO_QUERY_BLACKLIST = ['$where']
+MONGO_QUERY_BLACKLIST = []
 
 XML = False
 JSON = True
@@ -49,7 +49,8 @@ LOGGING_LEVEL = logging.DEBUG
 schema = {
     'pattern': {
         'type': 'urlpattern',
-        'required': True
+        'required': True,
+        'unique': True,
     },
     'target': {
         'type': 'string',
@@ -86,10 +87,6 @@ alias = {
     'item_title': 'alias',
     'resource_methods': ['POST'],
     'item_methods': ['DELETE', 'PATCH', 'PUT'],
-    'mongo_indexes': {
-        # Search index, language setting to avoid stemming and stop words
-        'text': ([('pattern', 'text')], {'default_language': 'none'})
-    },
     'datasource': {
         'source': 'aliases_db'
     },

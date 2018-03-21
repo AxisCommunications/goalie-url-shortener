@@ -7,7 +7,6 @@ construct the modified target from the incoming alias.
 """
 import re
 from logging import Formatter, StreamHandler
-from logging.handlers import RotatingFileHandler
 
 from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
@@ -16,7 +15,7 @@ from flask_pymongo import PyMongo
 app = Flask(__name__)  # pylint: disable=invalid-name
 #app.config.from_pyfile('settings.py', silent=True)
 app.config.update(
-    DEBUG=False, # Toggle useful debugging prints
+    DEBUG=True, # Toggle useful debugging prints
     MONGO_HOST='db',
     MONGO_PORT=27028,
     MONGO_DBNAME='aliases_db'
@@ -25,10 +24,6 @@ app.config.update(
 mongo = PyMongo(app)
 
 # Add logging capabilities.
-# HANDLER = RotatingFileHandler(
-#    '/app/logs/go-service.log', maxBytes=10*1024*1024, backupCount=20)
-# HANDLER.setLevel(app.config['LOGGING_LEVEL'])
-#HANDLER.setFormatter(Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
 app.logger.addHandler(StreamHandler())
 
 
@@ -37,28 +32,22 @@ def go_routing(alias):
     """ Takes alias and redirects user to target found in database. """
     app.logger.debug("Alias: %s", alias)
 
-    search = re.findall(r'\b[\w\.\_\-]+\b', alias)[0]
+    query = {'$where': "\"{}\".match(this.pattern)".format(alias)} # Reverse regex match
 
-    query = {'$text': {
-        '$search': r'"{}"'.format(search)
-    }}
     app.logger.debug("Search: %s", query)
 
-    result = mongo.db.aliases_db.find_one_or_404(query)
-    app.logger.debug("Search result %s", result)
+    unsorted = list(mongo.db.aliases_db.find(query))
 
-    if len(re.findall(r'\((.*?)\)', result['pattern'])) <= 1:
-        # no capture group -> no insertion into target needed
-        app.logger.debug("URL target: %s", result['target'])
-        return redirect(result['target'])
+    # Sort list by longest pattern first
+    result = sorted(unsorted, key=lambda k: len(k['pattern']), reverse=True)
 
-    elif re.match(result['pattern'], alias):
-        # capture group successful -> insert into target
-        app.logger.debug(
-            "Capture group target: %s", result['target'])
-        target = re.sub(result['pattern'], result['target'], alias)
-        app.logger.debug("Constructed URL target: %s", target)
-        return redirect(target)
+    app.logger.debug("Result: %s", result)
+
+    for item in result:
+        if re.match(item['pattern'], alias):
+            target = re.sub(item['pattern'], item['target'], alias)
+            app.logger.debug("Target: %s", target)
+            return redirect(target)
 
     abort(404)
     return redirect('localhost')  # Consistent return statement

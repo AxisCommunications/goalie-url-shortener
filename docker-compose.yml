@@ -6,11 +6,12 @@ services:
     networks:
       - db_net
     volumes:
-      - "db_data:/data/db"
+      - db_data:/data/db
     environment: 
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
     command: mongod --port 27028
+    restart: unless-stopped
 
   api:
     build:
@@ -24,6 +25,7 @@ services:
       - web_net
     depends_on:
       - db
+    restart: unless-stopped
 
   service:
     build:
@@ -37,6 +39,18 @@ services:
       - web_net
     depends_on:
       - db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - NODE_ENV=production
+        - http_proxy
+        - https_proxy
+        - no_proxy
+    volumes:
+      - frontend_files:/usr/src/app/build
 
   nginx:
     build:
@@ -47,10 +61,13 @@ services:
     networks:
       - web_net
     volumes:
-      - "/etc/ssl/certs/company-ssl-certs:/etc/nginx/certs:ro"
+      - /etc/ssl/certs/company-ssl-certs:/etc/nginx/certs:ro
+      - frontend_files:/usr/share/nginx/html:ro
     depends_on:
       - api
       - service
+      - frontend
+    restart: unless-stopped
 
 networks: 
   db_net:
@@ -59,3 +76,4 @@ networks:
     driver: bridge
 volumes:
   db_data:
+  frontend_files:
