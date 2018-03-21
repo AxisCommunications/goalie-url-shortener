@@ -1,0 +1,61 @@
+version: '3'
+services:
+
+  db:
+    image: mongo:3.6
+    networks:
+      - db_net
+    volumes:
+      - "db_data:/data/db"
+    environment: 
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+    command: mongod --port 27028
+
+  api:
+    build:
+      context: ./backend/api
+      args:
+       - http_proxy
+       - https_proxy
+       - no_proxy
+    networks:
+      - db_net
+      - web_net
+    depends_on:
+      - db
+
+  service:
+    build:
+      context: ./backend/service
+      args:
+       - http_proxy
+       - https_proxy
+       - no_proxy
+    networks:
+      - db_net
+      - web_net
+    depends_on:
+      - db
+
+  nginx:
+    build:
+      context: ./backend/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - web_net
+    volumes:
+      - "/etc/ssl/certs/company-ssl-certs:/etc/nginx/certs:ro"
+    depends_on:
+      - api
+      - service
+
+networks: 
+  db_net:
+    driver: bridge
+  web_net:
+    driver: bridge
+volumes:
+  db_data:

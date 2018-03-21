@@ -69,7 +69,7 @@ class shortcutItem extends Component {
 
   renderEditButtons() {
     return (
-      <td className="configure">
+      <td className={this.state.editing ? "configure edit": "configure" }>
         <div className="u-pull-right button-group">
           {this.state.editing ? (
             [

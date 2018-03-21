@@ -87,7 +87,7 @@ class AddShortcut extends Component {
       touched: { ...this.state.touched, [event.target.name]: true }
     });
     if (event.target.name === "target" && this.state.shortcut.target === "") {
-      this.setState({ shortcut: { ...this.state.shortcut, target: "http" } });
+      this.setState({ shortcut: { ...this.state.shortcut, target: "https://" } });
     }
   }
 
@@ -123,12 +123,13 @@ class AddShortcut extends Component {
         }
         onFocus={this.onFocus}
         onChange={this.onChange}
+        autoFocus={fieldName === "pattern"}
       />
     );
   }
   render() {
     return this.props.visible ? (
-      <div className="eight columns offset-by-two add-group">
+      <div className="ten columns offset-by-one add-group">
         {this.renderInput("pattern")}
         {this.renderInput("target")}
         <IconButton

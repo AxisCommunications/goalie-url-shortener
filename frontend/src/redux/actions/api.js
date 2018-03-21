@@ -6,7 +6,7 @@ import safe from "safe-regex";
 
 // Setup basic api configuration
 export const api = axios.create({
-  baseURL: "http://172.25.162.119:12001/",
+  baseURL: "https://user.example.com/",
   timeout: 5000
 });
 

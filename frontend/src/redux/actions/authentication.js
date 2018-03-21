@@ -31,7 +31,7 @@ export function loginUser(credentials) {
   return (dispatch, getState) => {
     timestamp();
     dispatch({ type: types.LOGIN_REQUEST, credentials });
-    return api.post("/login", credentials).then(
+    return api.post("/api/login", credentials).then(
       response => {
         setLogin(
           response.data.access_token,
@@ -72,7 +72,7 @@ export function refreshSession() {
     }
 
     let config = {
-      url: "/refresh",
+      url: "/api/refresh",
       method: "post",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("refresh_token")}`

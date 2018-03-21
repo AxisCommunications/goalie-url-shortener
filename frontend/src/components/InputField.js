@@ -7,21 +7,16 @@ export default class InputField extends Component {
     }
   }
   render() {
+    let {...other} = this.props;
     return (
       <input
-        className={this.props.className}
         type={
           this.props.name === "password" || this.props.name === "submit"
             ? this.props.name
             : "text"
         }
         placeholder={this.capitalizeFirstLetter(this.props.name)}
-        name={this.props.name}
-        value={this.props.value}
-        onChange={this.props.onChange}
-        onClick={this.props.onClick}
-        onBlur={this.props.onBlur}
-        onFocus={this.props.onFocus}
+        {...other} // load props to input
       />
     );
   }

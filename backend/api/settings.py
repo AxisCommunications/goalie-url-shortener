@@ -1,8 +1,8 @@
 import logging
 import ssl
 
-MONGO_HOST = 'mongodb'
-MONGO_PORT = 27017
+MONGO_HOST = 'db'
+MONGO_PORT = 27028
 MONGO_DBNAME = 'aliases_db'
 MONGO_QUERY_BLACKLIST = ['$where']
 

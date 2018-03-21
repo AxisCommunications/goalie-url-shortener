@@ -19,10 +19,7 @@ else:
 app = Eve(template_folder='/root', auth=token_auth)
 app.validator = partial(PatternValidator, app)
 token_auth.jwt_app(app)
-
-handler = logging.FileHandler('/app/logs/go-service-api.log')
-handler.setLevel(logging.DEBUG)
-app.logger.addHandler(handler)
+app.logger.addHandler(logging.StreamHandler())
 
 jwt_manager = JWTManager(app)
 api = API(app)
@@ -39,7 +36,7 @@ app.on_inserted += api.inserted_item # pylint: disable=no-member
 app.on_pre_PATCH += api.pre_patch # pylint: disable=no-member
 app.on_updated += api.updated_item # pylint: disable=no-member
 
-app.add_url_rule('/login', 'login', app.auth.login, methods=['POST', 'OPTIONS'])
+app.add_url_rule('/api/login', 'login', app.auth.login, methods=['POST', 'OPTIONS'])
 app.view_functions['login'] = app.auth.login
-app.add_url_rule('/refresh', 'refresh', app.auth.refresh, methods=['POST', 'OPTIONS'])
+app.add_url_rule('/api/refresh', 'refresh', app.auth.refresh, methods=['POST', 'OPTIONS'])
 app.view_functions['refresh'] = app.auth.refresh

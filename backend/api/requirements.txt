@@ -1,0 +1,7 @@
+Eve==0.7.8
+Flask==0.12
+Flask-Cors==3.0.3
+Flask-JWT-Extended==3.6.0
+Flask-PyMongo==0.5.1
+ldap3==2.4.1
+uWSGI==2.0.17
