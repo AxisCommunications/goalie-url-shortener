@@ -10,17 +10,12 @@ RUN groupadd flaskgroup && useradd -m -g flaskgroup -s /bin/bash flask
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application to container image
-COPY . .
-RUN chown -R flask:flaskgroup /usr/src/app
-
-# Create a symlink with a unique name to the Flask app's static resources.
-# This volume can then get mounted and used by another container.
-RUN ln -s /usr/src/app /usr/service
-VOLUME /usr/service
-
 # Expose the port where uWSGI will run
 EXPOSE 5002
+
+# Copy application to container image
+COPY service.py ./service.py
+RUN chown -R flask:flaskgroup /usr/src/app
 
 # Change user
 USER flask

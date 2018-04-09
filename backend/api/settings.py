@@ -44,8 +44,6 @@ X_EXPOSE_HEADERS = ['Authorization', 'Content-Type']
 CACHE_CONTROL = 'max-age=6'
 CACHE_EXPIRES = 6
 
-LOGGING_LEVEL = logging.DEBUG
-
 schema = {
     'pattern': {
         'type': 'urlpattern',

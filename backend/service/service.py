@@ -13,19 +13,20 @@ from flask_pymongo import PyMongo
 
 # Initialize the application.
 app = Flask(__name__)  # pylint: disable=invalid-name
-#app.config.from_pyfile('settings.py', silent=True)
+
+# Basic configuration
 app.config.update(
-    DEBUG=True, # Toggle useful debugging prints
+    DEBUG=False, # Toggle useful debugging prints
     MONGO_HOST='db',
     MONGO_PORT=27028,
     MONGO_DBNAME='aliases_db'
 )
-# app.debug = True  # For debugging purposes
+
+# Initialize database connection
 mongo = PyMongo(app)
 
 # Add logging capabilities.
 app.logger.addHandler(StreamHandler())
-
 
 @app.route('/<path:alias>')
 def go_routing(alias):
