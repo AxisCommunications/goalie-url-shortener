@@ -35,7 +35,12 @@ def go_routing(alias):
     app.logger.debug("Alias: %s", alias)
 
     # Reverse regex match
-    query = {'$where': "\"{}\".match(this.pattern + \"$\")".format(alias)}
+    query = {
+        '$where':
+            # case insensitive and exact match
+            '"{}".match(new RegExp("^" + this.pattern + "$", "i"))'.
+            format(alias)
+    }
 
     app.logger.debug("Search: %s", query)
 
@@ -47,10 +52,16 @@ def go_routing(alias):
     app.logger.debug("Result: %s", result)
 
     for item in result:
-        match = re.match(item['pattern'], alias)
+        match = re.match(item['pattern']+"$", alias, re.I)
         if match:
             # Only substitute matching part of alias
-            target = re.sub(item['pattern'], item['target'], match.group(0))
+            app.logger.debug("Item: %s", item)
+            target = re.sub(
+                "^" + item['pattern'] + "$", # make sure entire pattern
+                item['target'],
+                match.group(0), # only matching part not entire alias
+                flags=re.I # case insensitive
+            )
             app.logger.debug("Target: %s", target)
             return redirect(target)
 

@@ -1,4 +1,3 @@
-import logging
 import ssl
 
 MONGO_HOST = 'db'

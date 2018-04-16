@@ -6,7 +6,7 @@ import safe from "safe-regex";
 
 // Setup basic api configuration
 export const api = axios.create({
-  baseURL: "https://go2.company.com/",
+  baseURL: "https://go.company.com/",
   timeout: 5000
 });
 
@@ -21,7 +21,7 @@ function buildRequestConfig(page, filter, view, username) {
     url,
     method: "get",
     params: {
-      page: page,
+      page,
       sort: "pattern",
     },
     headers: { Authorization: `Bearer ${token}` }
