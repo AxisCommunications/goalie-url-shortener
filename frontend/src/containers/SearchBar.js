@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { filter_result } from "../redux/actions/api";
+import debounce from "lodash.debounce";
 
 class SearchBar extends Component {
   constructor(props) {
@@ -11,10 +12,18 @@ class SearchBar extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+
+    // Limit number of events fired with debounce
+    this.updateSearch = debounce(this.updateSearch, 200);
   }
 
   handleChange(event) {
     this.setState({ value: event.target.value });
+    this.updateSearch(); // Debounced
+  }
+
+  updateSearch() {
+    this.props.filter(this.state.value);
   }
 
   handleSubmit(event) {

@@ -20,7 +20,10 @@ function buildRequestConfig(page, filter, view, username) {
   let config = {
     url,
     method: "get",
-    params: { page: page },
+    params: {
+      page: page,
+      sort: "pattern",
+    },
     headers: { Authorization: `Bearer ${token}` }
   };
   if (isNotEmptyOrWhitespace(filter)) {
