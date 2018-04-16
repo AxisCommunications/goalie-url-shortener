@@ -6,7 +6,7 @@ if the pattern is a capture group it uses standard regex substitution to
 construct the modified target from the incoming alias.
 """
 import re
-from logging import Formatter, StreamHandler
+from logging import StreamHandler
 
 from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
@@ -16,7 +16,7 @@ app = Flask(__name__)  # pylint: disable=invalid-name
 
 # Basic configuration
 app.config.update(
-    DEBUG=False, # Toggle useful debugging prints
+    DEBUG=False,  # Toggle useful debugging prints
     MONGO_HOST='db',
     MONGO_PORT=27028,
     MONGO_DBNAME='aliases_db'
@@ -28,12 +28,14 @@ mongo = PyMongo(app)
 # Add logging capabilities.
 app.logger.addHandler(StreamHandler())
 
+
 @app.route('/<path:alias>')
 def go_routing(alias):
     """ Takes alias and redirects user to target found in database. """
     app.logger.debug("Alias: %s", alias)
 
-    query = {'$where': "\"{}\".match(this.pattern)".format(alias)} # Reverse regex match
+    # Reverse regex match
+    query = {'$where': "\"{}\".match(this.pattern + \"$\")".format(alias)}
 
     app.logger.debug("Search: %s", query)
 
@@ -45,8 +47,10 @@ def go_routing(alias):
     app.logger.debug("Result: %s", result)
 
     for item in result:
-        if re.match(item['pattern'], alias):
-            target = re.sub(item['pattern'], item['target'], alias)
+        match = re.match(item['pattern'], alias)
+        if match:
+            # Only substitute matching part of alias
+            target = re.sub(item['pattern'], item['target'], match.group(0))
             app.logger.debug("Target: %s", target)
             return redirect(target)
 

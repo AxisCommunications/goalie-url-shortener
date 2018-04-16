@@ -19,6 +19,6 @@ export const types = {
 };
 
 export const url_reg = new RegExp(
-  /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/gi
+  /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=\\]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/gi
   // /.+\.\w\w.*/
 );
