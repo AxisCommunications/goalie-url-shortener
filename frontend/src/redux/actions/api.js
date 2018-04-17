@@ -1,4 +1,4 @@
-import { types } from "../../utils/constants";
+import { types, API_URL } from "../../utils/constants";
 import { setErrorWithTimeout } from "./error";
 import { validLogin, refreshSession, logoutUser } from "./authentication";
 import axios from "axios";
@@ -6,7 +6,7 @@ import safe from "safe-regex";
 
 // Setup basic api configuration
 export const api = axios.create({
-  baseURL: "https://go.company.com/",
+  baseURL: API_URL,
   timeout: 5000
 });
 

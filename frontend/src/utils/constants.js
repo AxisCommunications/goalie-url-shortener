@@ -1,3 +1,5 @@
+export const API_URL = "https://go.company.com/";
+
 export const types = {
   LOGIN_REQUEST: "LOGIN_REQUEST",
   LOGIN_SUCCESS: "LOGIN_SUCCESS",
