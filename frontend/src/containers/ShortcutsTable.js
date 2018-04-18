@@ -1,11 +1,37 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { getShortcuts } from "../redux/actions/api";
+import Icon from "react-icons-kit";
+import { arrowDown } from "react-icons-kit/icomoon/arrowDown";
+import { arrowUp } from "react-icons-kit/icomoon/arrowUp";
+import { getShortcuts, sort_result } from "../redux/actions/api";
 import ShortcutItem from "./ShortcutItem";
 
 class ShortcutsTable extends Component {
+  constructor(props) {
+    super(props);
+    this.sort = this.sort.bind(this);
+  }
   componentDidMount() {
     this.props.fetchShortcuts();
+  }
+
+  sort(order) {
+    if (order === this.props.sortOrder) {
+      this.props.sortShortcuts("-" + order);
+    } else {
+      this.props.sortShortcuts(order);
+    }
+  }
+
+  shouldDisplayConfigure() {
+    return this.props.view === "my" || this.props.rights === "admin";
+  }
+
+  renderArrow(heading) {
+    if (this.props.sortOrder.includes(heading)) {
+      let arrow = this.props.sortOrder.includes("-") ? arrowDown : arrowUp;
+      return <Icon icon={arrow} />;
+    }
   }
 
   render() {
@@ -14,11 +40,28 @@ class ShortcutsTable extends Component {
         <table className="u-full-width fixed">
           <thead>
             <tr key="0">
-              <th key="1">Pattern</th>
-              <th key="2">Target</th>
-              <th key="3">Owner</th>
-              <th key="4">Modified</th>
-              {this.props.view === "my" || this.props.rights === "admin" ? (
+              <th
+                className="sortable"
+                key="1"
+                onClick={() => this.sort("pattern")}
+              >
+                Pattern {this.renderArrow("pattern")}
+              </th>
+              <th
+                className="sortable"
+                key="2"
+                onClick={() => this.sort("target")}
+              >
+                Target {this.renderArrow("target")}
+              </th>
+              <th
+                className="sortable"
+                key="4"
+                onClick={() => this.sort("_updated")}
+              >
+                Modified {this.renderArrow("_updated")}
+              </th>
+              {this.shouldDisplayConfigure() ? (
                 <th key="5">
                   <div className="u-pull-right">Configure</div>
                 </th>
@@ -27,14 +70,7 @@ class ShortcutsTable extends Component {
           </thead>
           <tbody>
             {this.props.shortcuts.map(shortcut => {
-              return (
-                <ShortcutItem
-                  key={shortcut._id}
-                  shortcut={shortcut}
-                  view={this.props.view}
-                  rights={this.props.rights}
-                />
-              );
+              return <ShortcutItem key={shortcut._id} shortcut={shortcut} />;
             })}
           </tbody>
         </table>
@@ -46,6 +82,7 @@ class ShortcutsTable extends Component {
 const mapStateToProps = state => {
   return {
     shortcuts: state.shortcuts.items,
+    sortOrder: state.shortcuts.sort,
     view: state.gui.view,
     rights: state.authentication.rights
   };
@@ -53,7 +90,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    fetchShortcuts: () => dispatch(getShortcuts())
+    fetchShortcuts: () => dispatch(getShortcuts()),
+    sortShortcuts: sort => dispatch(sort_result(sort))
   };
 };
 

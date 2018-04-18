@@ -164,6 +164,11 @@ div.button-group > button.button.icon {
   margin-left: -0.4em;
 }
 
+/* Change pointer style on sortable table headers */
+th.sortable {
+  cursor: pointer;
+}
+
 /* Table item fixed size */
 td.pattern {
   max-width: 10vw;

@@ -135,13 +135,22 @@ class shortcutItem extends Component {
       <tr>
         <td className="pattern">{this.renderField("pattern")}</td>
         <td className="target">{this.renderField("target")}</td>
-        <td className="owner">{this.state.owner}</td>
-        <td className="modified">{this.state.date.fromNow()}</td>
+        <td className="modified">
+          {this.state.date.fromNow()} by {this.state.owner}
+        </td>
         {this.renderField("buttons")}
       </tr>
     );
   }
 }
+
+const mapStateToProps = state => {
+  return {
+    view: state.gui.view,
+    rights: state.authentication.rights,
+    username: state.authentication.username
+  };
+};
 
 const mapDispatchToProps = dispatch => {
   return {
@@ -150,4 +159,4 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(null, mapDispatchToProps)(shortcutItem);
+export default connect(mapStateToProps, mapDispatchToProps)(shortcutItem);

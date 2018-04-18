@@ -14,7 +14,7 @@ function isNotEmptyOrWhitespace(string) {
   return /\S/.test(string);
 }
 
-function buildRequestConfig(page, filter, view, username) {
+function buildRequestConfig(page, filter, sort, view, username) {
   let token = view === "my" ? localStorage.getItem("access_token") : "1.1.1";
   let url = view === "all" ? "api/all" : `api/all/${username}`;
   let config = {
@@ -22,7 +22,7 @@ function buildRequestConfig(page, filter, view, username) {
     method: "get",
     params: {
       page,
-      sort: "pattern",
+      sort
     },
     headers: { Authorization: `Bearer ${token}` }
   };
@@ -37,7 +37,7 @@ function buildRequestConfig(page, filter, view, username) {
 export function getShortcuts(page = 1) {
   return (dispatch, getState) => {
     let { shortcuts, gui, authentication } = getState();
-    let { filter, loading } = shortcuts;
+    let { filter, sort, loading } = shortcuts;
     let { view } = gui;
     let { username, authenticated } = authentication;
 
@@ -47,7 +47,7 @@ export function getShortcuts(page = 1) {
     }
     // Start shortcuts request
     dispatch({ type: types.SHORTCUTS_REQUEST });
-    return api.request(buildRequestConfig(page, filter, view, username)).then(
+    return api.request(buildRequestConfig(page, filter, sort, view, username)).then(
       response => {
         let per_page = parseInt(response.data._meta.max_results, 10);
         let total = parseInt(response.data._meta.total, 10);
@@ -181,6 +181,20 @@ export function deleteShortcut(id) {
         () => dispatch({ type: types.DELETE_SHORTCUT, id }),
         error => dispatch(setErrorWithTimeout(error))
       );
+  };
+}
+
+export function sort_result(sort = "pattern") {
+  return (dispatch, getState) => {
+    if (sort === getState().shortcuts.sort) {
+      return Promise.resolve(); // No change of sort
+    } else {
+      dispatch({
+        type: types.SET_SORT,
+        sort
+      });
+      return dispatch(getShortcuts());
+    }
   };
 }
 

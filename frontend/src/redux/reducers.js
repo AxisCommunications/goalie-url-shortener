@@ -7,6 +7,7 @@ const inital_shortcuts = {
   items: [],
   loading: false,
   filter: "",
+  sort: "pattern",
   pages: 1,
   page: 1
 };
@@ -107,6 +108,11 @@ function shortcuts(state = inital_shortcuts, action) {
     case types.RESET_FILTER:
       return update(state, {
         filter: { $set: "" }
+      });
+
+    case types.SET_SORT:
+      return update(state, {
+        sort: { $set: action.sort }
       });
 
     default:
