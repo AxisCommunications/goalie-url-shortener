@@ -29,7 +29,7 @@ export default class App extends Component {
               <AddShortcut />
             </div>
             <div key="table" className="row">
-              <div className="ten columns offset-by-one">
+              <div className="twelve columns">
                 <ShortcutsTable />
                 <p className="separator " />
               </div>

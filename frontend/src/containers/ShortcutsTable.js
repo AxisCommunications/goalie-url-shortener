@@ -16,8 +16,10 @@ class ShortcutsTable extends Component {
             <tr key="0">
               <th key="1">Pattern</th>
               <th key="2">Target</th>
+              <th key="3">Owner</th>
+              <th key="4">Modified</th>
               {this.props.view === "my" || this.props.rights === "admin" ? (
-                <th key="3">
+                <th key="5">
                   <div className="u-pull-right">Configure</div>
                 </th>
               ) : null}

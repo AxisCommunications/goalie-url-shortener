@@ -166,12 +166,12 @@ div.button-group > button.button.icon {
 
 /* Table item fixed size */
 td.pattern {
-  max-width: 7vw;
+  max-width: 10vw;
   overflow-wrap: break-word;
 }
 
 td.target {
-  max-width: 10vw;
+  max-width: 15vw;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

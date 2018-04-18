@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import moment from "moment";
 import { deleteShortcut, updateShortcut } from "../redux/actions/api";
 
 import IconButton from "../components/IconButton";
@@ -7,10 +8,14 @@ import IconButton from "../components/IconButton";
 class shortcutItem extends Component {
   constructor(props) {
     super(props);
+    // Moment JS handles the RFC 822 string since support for RFC2822 included
+    let date = moment(this.props.shortcut._updated);
     this.state = {
       editing: false,
       pattern: this.props.shortcut.pattern,
       target: this.props.shortcut.target,
+      owner: this.props.shortcut.ldapuser,
+      date,
       id: this.props.shortcut._id
     };
     this.enterEdit = this.enterEdit.bind(this);
@@ -69,7 +74,7 @@ class shortcutItem extends Component {
 
   renderEditButtons() {
     return (
-      <td className={this.state.editing ? "configure edit": "configure" }>
+      <td className={this.state.editing ? "configure edit" : "configure"}>
         <div className="u-pull-right button-group">
           {this.state.editing ? (
             [
@@ -130,6 +135,8 @@ class shortcutItem extends Component {
       <tr>
         <td className="pattern">{this.renderField("pattern")}</td>
         <td className="target">{this.renderField("target")}</td>
+        <td className="owner">{this.state.owner}</td>
+        <td className="modified">{this.state.date.fromNow()}</td>
         {this.renderField("buttons")}
       </tr>
     );
