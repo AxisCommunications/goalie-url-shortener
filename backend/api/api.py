@@ -5,7 +5,6 @@ API for the GO service.
 import re
 import secrets
 import time
-from string import whitespace
 
 import jwt
 from eve.auth import TokenAuth

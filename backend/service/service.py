@@ -6,7 +6,7 @@ if the pattern is a capture group it uses standard regex substitution to
 construct the modified target from the incoming alias.
 """
 import re
-from logging import StreamHandler
+import logging
 
 from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
@@ -26,7 +26,7 @@ app.config.update(
 mongo = PyMongo(app)
 
 # Add logging capabilities.
-app.logger.addHandler(StreamHandler())
+app.logger.addHandler(logging.StreamHandler())
 
 
 @app.route('/<path:alias>')
@@ -57,10 +57,10 @@ def go_routing(alias):
             # Only substitute matching part of alias
             app.logger.debug("Item: %s", item)
             target = re.sub(
-                "^" + item['pattern'] + "$", # make sure entire pattern
+                "^" + item['pattern'] + "$",  # make sure entire pattern
                 item['target'],
-                match.group(0), # only matching part not entire alias
-                flags=re.I # case insensitive
+                match.group(0),  # only matching part not entire alias
+                flags=re.I  # case insensitive
             )
             app.logger.debug("Target: %s", target)
             return redirect(target)
