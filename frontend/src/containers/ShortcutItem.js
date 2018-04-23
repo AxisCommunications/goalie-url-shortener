@@ -8,14 +8,11 @@ import IconButton from "../components/IconButton";
 class shortcutItem extends Component {
   constructor(props) {
     super(props);
-    // Moment JS handles the RFC 822 string since support for RFC2822 included
-    let date = moment(this.props.shortcut._updated);
     this.state = {
       editing: false,
       pattern: this.props.shortcut.pattern,
       target: this.props.shortcut.target,
-      owner: this.props.shortcut.ldapuser,
-      date,
+      date: moment(this.props.shortcut._updated), // Moment.js supports RFC 822 date (RFC2822)
       id: this.props.shortcut._id
     };
     this.enterEdit = this.enterEdit.bind(this);
@@ -63,7 +60,10 @@ class shortcutItem extends Component {
         this.props.shortcut.pattern === this.state.pattern &&
         this.props.shortcut.target === this.state.target
       ) {
-        this.setState({ editing: false });
+        this.setState({
+          editing: false,
+          date: moment()
+        });
       }
     });
   }
@@ -136,7 +136,7 @@ class shortcutItem extends Component {
         <td className="pattern">{this.renderField("pattern")}</td>
         <td className="target">{this.renderField("target")}</td>
         <td className="modified">
-          {this.state.date.fromNow()} by {this.state.owner}
+          {this.state.date.fromNow()} by {this.props.shortcut.ldapuser}
         </td>
         {this.renderField("buttons")}
       </tr>
