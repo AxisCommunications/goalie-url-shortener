@@ -14,7 +14,7 @@ function Footer() {
             
           </a>
           <br />
-          <a href="mailto:support-tools@example.com">
+          <a href="mailto:support-tools@example.com?subject=go-service support">
             Contact: support@example.com
           </a>
         </div>
