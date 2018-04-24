@@ -6,7 +6,8 @@ if the pattern is a capture group it uses standard regex substitution to
 construct the modified target from the incoming alias.
 """
 import re
-import logging
+import sre_constants
+import sre_parse
 
 from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
@@ -25,8 +26,49 @@ app.config.update(
 # Initialize database connection
 mongo = PyMongo(app)
 
-# Add logging capabilities.
-app.logger.addHandler(logging.StreamHandler())
+
+def sort_regex(shortcut_list):
+    """
+    Sort list in the following order
+        1. The smallest maximum width of the regex
+        2. The shortest regex string
+        3. Regex string in alphabetical order (exception for '.', '?')
+    """
+    def ranking(item):
+        regex = item['pattern'] + '$'
+        regex_max_width = int(sre_parse.parse(regex).getwidth()[1])
+        length = len(item['pattern'])
+        # Make sure ".", "*" and "?" are placed last
+        alphabetical = re.sub('[.?*]', u"\U0010FFFF", item['pattern'])
+        # special case for patterns with infinite wildcards like \d+ or .*
+        if (regex_max_width >= int(sre_constants.MAXREPEAT)):
+            # in this case we consider the longer string to be more specific
+            length = -length
+        return (regex_max_width, length, alphabetical)
+
+    return sorted(shortcut_list, key=ranking)
+
+
+def best_target_match(alias, items):
+    """ Finds the best target to return on incoming alias and
+        mongodb result """
+    items = sort_regex(items)
+
+    app.logger.debug("Sorted: %s", items)
+
+    for item in items:
+        match = re.match(item['pattern']+"$", alias, re.I)
+        if match:
+            # Only substitute matching part of alias
+            app.logger.debug("Item: %s", item)
+            target = re.sub(
+                "^" + item['pattern'] + "$",  # make sure entire pattern
+                item['target'],
+                match.group(0),  # only matching part not entire alias
+                flags=re.I  # case insensitive
+            )
+            app.logger.debug("Target: %s", target)
+            return target
 
 
 @app.route('/<path:alias>')
@@ -43,27 +85,10 @@ def go_routing(alias):
     }
 
     app.logger.debug("Search: %s", query)
-
-    unsorted = list(mongo.db.aliases_db.find(query))
-
-    # Sort list by longest pattern first
-    result = sorted(unsorted, key=lambda k: len(k['pattern']), reverse=True)
-
+    result = list(mongo.db.aliases_db.find(query))
     app.logger.debug("Result: %s", result)
-
-    for item in result:
-        match = re.match(item['pattern']+"$", alias, re.I)
-        if match:
-            # Only substitute matching part of alias
-            app.logger.debug("Item: %s", item)
-            target = re.sub(
-                "^" + item['pattern'] + "$",  # make sure entire pattern
-                item['target'],
-                match.group(0),  # only matching part not entire alias
-                flags=re.I  # case insensitive
-            )
-            app.logger.debug("Target: %s", target)
-            return redirect(target)
-
+    target = best_target_match(alias, result)
+    if target is not None:
+        return redirect(target)
     abort(404)
     return redirect('localhost')  # Consistent return statement
