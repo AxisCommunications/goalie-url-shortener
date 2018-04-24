@@ -209,8 +209,8 @@ export function filter_result(filter = "") {
       });
       return dispatch(getShortcuts());
     } else {
-      let error = { message: "Entered filter is not considered safe." };
-      return dispatch(setErrorWithTimeout(error));
+      // Unsafe filter, no error message since it was annoying
+      return Promise.resolve();
     }
   };
 }
