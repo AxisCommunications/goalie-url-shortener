@@ -36,12 +36,23 @@ def sort_regex(shortcut_list):
     def ranking(item):
         regex = item['pattern'] + '$'
         regex_max_width = int(sre_parse.parse(regex).getwidth()[1])
-        length = len(item['pattern'])
-        # Make sure ".", "*" and "?" are placed last
-        alphabetical = re.sub('[.?*]', u"\U0010FFFF", item['pattern'])
-        # special case for patterns with infinite wildcards like \d+ or .*
+
+        # Capture group should not impact length
+        l = re.sub(r'[()]', '', item['pattern'])
+        # two character specifier should not impact length
+        l = re.sub(r'\\(\w)', '\1', l)
+        length = len(l)
+
+        # "\d" and "\w" placed before "."
+        a = re.sub(r'[\\]', u"\U0010FFFD", item['pattern'])
+        # "atf" before "(atf)" with "at." last
+        a = re.sub(r'[(]', '', a)
+        # Make sure regex symbols after letters or numbers
+        alphabetical = re.sub(r'[.?*)]', u"\U0010FFFF", a)
+
+        # patterns with infinite wildcards like \d+ or .*
         if (regex_max_width >= int(sre_constants.MAXREPEAT)):
-            # in this case we consider the longer string to be more specific
+            # in this case longer string more specific
             length = -length
         return (regex_max_width, length, alphabetical)
 

@@ -25,7 +25,7 @@ class TestServiceMethods(unittest.TestCase):
             {'pattern': r'atf'}
         ]
         # This is a representation of the order most users expect
-        atf_regs_correctly_sorted = [
+        atf_regs_optimal_sorting = [
             {'pattern': r'atf'},
             {'pattern': r'(atf)'},
             {'pattern': r'at\d'},
@@ -39,14 +39,14 @@ class TestServiceMethods(unittest.TestCase):
             {'pattern': r'.+'},
             {'pattern': r'.*'}
         ]
-        # This is a representation of the order of the current omplementation
-        atf_regs_current_correct_sort = [
+        # This is a representation of the order of the current implementation
+        atf_regs_current_sorting = [
             {'pattern': r'atf'},
-            {'pattern': r'at.'},
+            {'pattern': r'(atf)'},
             {'pattern': r'at\d'},
             {'pattern': r'at\w'},
+            {'pattern': r'at.'},
             {'pattern': r'at.?'},
-            {'pattern': r'(atf)'},
             {'pattern': r'at[a-z]'},
             {'pattern': r'(a|atf|axis-test-framework)'},
             {'pattern': r'(atf)(.*)'},
@@ -54,9 +54,10 @@ class TestServiceMethods(unittest.TestCase):
             {'pattern': r'.+'},
             {'pattern': r'.*'}
         ]
+        del atf_regs_optimal_sorting #unused
         atf_regs_sorted = sort_regex(atf_regs)
         print(atf_regs_sorted)
-        self.assertEqual(atf_regs_sorted, atf_regs_current_correct_sort)
+        self.assertEqual(atf_regs_sorted, atf_regs_current_sorting)
 
     def test_atf_routing(self):
         """
