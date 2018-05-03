@@ -17,7 +17,6 @@ app = Flask(__name__)  # pylint: disable=invalid-name
 
 # Basic configuration
 app.config.update(
-    DEBUG=False,  # Toggle useful debugging prints
     MONGO_HOST='db',
     MONGO_PORT=27028,
     MONGO_DBNAME='aliases_db'
@@ -50,8 +49,9 @@ def sort_regex(shortcut_list):
 
 
 def best_target_match(alias, items):
-    """ Finds the best target to return on incoming alias and
-        mongodb result """
+    """
+    Finds the best target to return on incoming alias and mongodb result
+    """
     items = sort_regex(items)
 
     app.logger.debug("Sorted: %s", items)

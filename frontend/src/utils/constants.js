@@ -1,4 +1,13 @@
-export const API_URL = "https://go.company.com/";
+let api_location;
+if (process.env.NODE_ENV === "production") {
+  // Production environment
+  api_location = "https://go.company.com/";
+} else {
+  // Development environment
+  api_location = "http://localhost:5000/";
+}
+
+export const API_URL = api_location;
 
 export const types = {
   LOGIN_REQUEST: "LOGIN_REQUEST",

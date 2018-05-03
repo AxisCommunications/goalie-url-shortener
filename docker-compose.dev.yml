@@ -1,0 +1,41 @@
+version: '3'
+services:
+
+  db:
+    image: mongo:3.6
+    volumes:
+      - ~/mongodb/data:/data/db
+    command: mongod --port 27028
+
+  api:
+    build:
+      context: ./backend/api
+      args:
+       - http_proxy
+       - https_proxy
+       - no_proxy
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/api:/usr/src/app
+    command: ["python", "run.py"] # overrides the uwsgi server
+
+  service:
+    build:
+      context: ./backend/service
+      args:
+       - http_proxy
+       - https_proxy
+       - no_proxy
+    depends_on:
+      - db
+    ports:
+      - "80:5000" # (host port):(container port)
+    volumes:
+      - ./backend/service:/usr/src/app
+    environment:
+      FLASK_APP: "service.py"
+      FLASK_DEBUG: 1
+    command: ["flask", "run", "--host=0.0.0.0"]  # overrides the uwsgi server

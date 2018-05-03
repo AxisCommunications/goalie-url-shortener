@@ -91,8 +91,8 @@ class APITokenAuthenticator(TokenAuth):
         for group in self.admin_groups:
             if connection.search(
                     search_base=self.app.config['LDAP_AUTH_BASEDN'],
-                    search_filter=self.app.config['LDAP_GROUP_SEARCH_FILTER'].format(
-                        username, group),
+                    search_filter=self.app.
+                    config['LDAP_GROUP_SEARCH_FILTER'].format(username, group),
                     search_scope=SUBTREE,
                     attributes=ALL_ATTRIBUTES):
                 is_admin = True
@@ -104,15 +104,16 @@ class APITokenAuthenticator(TokenAuth):
         Find the full name of a user.
         """
         connection.search(search_base=self.app.config['LDAP_AUTH_BASEDN'],
-                          search_filter=self.app.config['LDAP_SAMACCOUNT_FILTER'].format(
-                              user),
+                          search_filter=self.app.
+                          config['LDAP_SAMACCOUNT_FILTER'].format(user),
                           search_scope=SUBTREE,
                           attributes=ALL_ATTRIBUTES)
         if not connection.response:
             return ""
 
         try:
-            samaccountname = connection.response[0]['raw_attributes']['sAMAccountName']
+            samaccountname = connection.response[0][
+                'raw_attributes']['sAMAccountName']
         except KeyError:
             samaccountname = None
 
@@ -120,7 +121,8 @@ class APITokenAuthenticator(TokenAuth):
 
     def _get_ldap_connection(self, username, password):
         """
-        Trying to establish a connection. If it fails, it returns a None connection.
+        Trying to establish a connection. If it fails, it returns a None
+        connection.
         """
         try:
             connection = Connection(self.ldap_server,
@@ -128,11 +130,12 @@ class APITokenAuthenticator(TokenAuth):
                                     user=username,
                                     password=password,
                                     client_strategy=SYNC,
-                                    auto_bind=self.app.config['AUTH_LDAP_INITIAL_AS_USER'],
+                                    auto_bind=self.app.
+                                    config['AUTH_LDAP_INITIAL_AS_USER'],
                                     raise_exceptions=True)
         except Exception:
-            self.app.logger.warning("Unable to establish connection to : {}".format(
-                self.app.config['LDAP_SERVER']))
+            self.app.logger.warning("Unable to establish connection to : {}".
+                                    format(self.app.config['LDAP_SERVER']))
             return None
         return connection
 
@@ -261,26 +264,29 @@ class API:
                 lookup['ldapuser'] = {'$eq': user_group[0]}
         return lookup
 
-    def pre_patch(self, resource, request, lookup):
+    def pre_patch(self, resource, flask_request, lookup):
         """
         Check which group a user belongs to. If in user, then filter out all
         entries that belongs to the user. Users in the admin group can update
         all entries.
         """
+        del resource, flask_request # Ignored parameters
         lookup = self.lookup_user(lookup)
 
-    def pre_delete(self, resource, requestf, lookup):
+    def pre_delete(self, resource, flask_request, lookup):
         """
         Check which group a user belongs to. If in user, then filter out all
         entries that belongs to the user. Users in the admin group can delete
         all entries.
         """
+        del resource, flask_request # Ignored parameters
         lookup = self.lookup_user(lookup)
 
-    def deleted_item(self, request, item):
+    def deleted_item(self, flask_request, item):
         """
         Inform that an deletion has been made.
         """
+        del flask_request # Ignored parameter
         user_group = self.app.auth.get_user_and_group()
         now = time.strftime("%Y-%m-%d %H:%M:%S")
         self.app.logger.debug(("{}: Delete performed " +
@@ -292,6 +298,7 @@ class API:
         """
         Links a user to a inserted alias pattern pair.
         """
+        del resource # Ignored parameter
         user_group = self.app.auth.get_user_and_group()
 
         if not user_group:
@@ -304,6 +311,7 @@ class API:
         """
         Inform that an insertion has been made.
         """
+        del resource # Ignored parameter
         user_group = self.app.auth.get_user_and_group()
         now = time.strftime("%Y-%m-%d %H:%M:%S")
         self.app.logger.debug(("{}: Insert performed by " +
@@ -315,6 +323,7 @@ class API:
         """
         Inform that a user has updated an item.
         """
+        del resource # Ignored parameter
         user_group = self.app.auth.get_user_and_group()
 
         update_time = updates['_updated']
