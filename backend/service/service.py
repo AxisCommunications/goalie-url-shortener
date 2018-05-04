@@ -8,6 +8,7 @@ construct the modified target from the incoming alias.
 import re
 import sre_constants
 import sre_parse
+import urllib.parse
 
 from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
@@ -92,7 +93,7 @@ def go_routing(alias):
         '$where':
             # case insensitive and exact match
             '"{}".match(new RegExp("^" + this.pattern + "$", "i"))'.
-            format(alias)
+            format(urllib.parse.quote(alias))
     }
 
     app.logger.debug("Search: %s", query)
