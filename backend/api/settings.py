@@ -14,9 +14,7 @@ LDAP_GROUP_SEARCH_FILTER = "(&" + LDAP_SAMACCOUNT_FILTER + "(memberOf={}))"
 LDAP_CN_MATCH = 'CN=([^,]+),.*'
 
 LDAP_TOOLS_ADMIN_GROUPS = \
-    ["cn=org-example,ou=role,ou=groups,dc=example,dc=com",
-     "cn=org-example,ou=role,ou=groups,dc=example,dc=com",
-     "cn=org-example,ou=role,ou=groups,dc=example,dc=com"]
+    ["cn=org-example,ou=role,ou=groups,dc=example,dc=com"]
 LDAP_AUTH_ENDPOINTS = {r"api/all": False,
                        r"api/all/.+": False,
                        r"api": True}
