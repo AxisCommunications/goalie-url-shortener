@@ -6,15 +6,17 @@ function Footer() {
     <footer>
       <div className="container footer">
         <div className="row text-center">
-          <img id="Company-Logo" src={logo} alt="Company Logo" />
+          <a href="https://www.example.com/">
+            <img id="Company-Logo" src={logo} alt="Company Logo" />
+          </a>
         </div>
 
         <div className="row text-center">
-          <a href="http://tools-docs.company.com/tools_team/">
+          <a href="https://docs.example.com">
             
           </a>
           <br />
-          <a href="mailto:support-tools@example.com?subject=go-service support">
+          <a href="mailto:support@example.com?subject=go-service support">
             Contact: support@example.com
           </a>
         </div>
