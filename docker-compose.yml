@@ -53,12 +53,26 @@ services:
     volumes:
       - /etc/ssl/certs/company-ssl-certs:/etc/nginx/certs:ro
       - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx_filebeat/
     depends_on:
       - api
       - service
     restart: unless-stopped
 
-networks: 
+  filebeat:
+    hostname: go-service-production
+    build:
+      context: ./backend/filebeat
+    volumes:
+      - nginx_logs:/var/log/nginx/
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
+volumes:
+  nginx_logs:
+
+networks:
   db_net:
     driver: bridge
   web_net:
