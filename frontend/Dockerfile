@@ -1,10 +1,9 @@
 # Use node image to build static files
-FROM node:9-slim as builder
+FROM node:9-alpine as builder
 WORKDIR /usr/src/app
 # Install dependencies
-COPY package.json .
-COPY yarn.lock .
-RUN yarn install --production
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile --production && yarn cache clean
 # Copy frontend files and build
 COPY . .
 RUN yarn build

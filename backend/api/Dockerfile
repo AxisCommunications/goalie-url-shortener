@@ -12,10 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose the port where uWSGI will run
 EXPOSE 5001
 
-# Copy application to container image
-COPY run.py ./run.py
-COPY api.py ./api.py
-COPY settings.py ./settings.py
+# Copy application source to container image
+COPY run.py api.py settings.py ./
+
+# Change owner of application files
 RUN chown -R flask:flaskgroup /usr/src/app
 
 # Change user
