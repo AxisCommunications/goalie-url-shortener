@@ -28,9 +28,9 @@ class Login extends Component {
   }
 
   onChange(event) {
-    const field = event.target.name;
-    const credentials = this.state.credentials;
-    credentials[field] = event.target.value;
+    const { name, value } = event.target;
+    const { credentials } = this.state;
+    credentials[name] = name === "username" ? value.toLowerCase() : value;
     return this.setState({ credentials });
   }
 
