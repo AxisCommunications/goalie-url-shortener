@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import {
   loginUser,
@@ -86,21 +87,26 @@ class Login extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    loading: state.authentication.loading,
-    error: state.authentication.error,
-    authenticated: state.authentication.authenticated,
-    username: state.authentication.username
-  };
+Login.propTypes = {
+  authenticated: PropTypes.bool.isRequired,
+  login: PropTypes.func.isRequired,
+  logout: PropTypes.func.isRequired,
+  logoutOnInvalidSession: PropTypes.func.isRequired,
+  username: PropTypes.string
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    login: credentials => dispatch(loginUser(credentials)),
-    logout: () => dispatch(logoutUser()),
-    logoutOnInvalidSession: () => dispatch(activeSessionCheck())
-  };
-};
+const mapStateToProps = state => ({
+  authenticated: state.authentication.authenticated,
+  username: state.authentication.username
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+const mapDispatchToProps = dispatch => ({
+  login: credentials => dispatch(loginUser(credentials)),
+  logout: () => dispatch(logoutUser()),
+  logoutOnInvalidSession: () => dispatch(activeSessionCheck())
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Login);

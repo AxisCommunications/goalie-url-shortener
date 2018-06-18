@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { changeView, renderAdd } from "../redux/actions/gui";
 
@@ -34,9 +35,9 @@ class TopButtons extends Component {
   }
 
   addButtonClass() {
-    return (
-      "button add-shortcut " + (this.props.add_visible ? "button-primary" : "")
-    );
+    return `button add-shortcut ${
+      this.props.add_visible ? "button-primary" : ""
+    }`;
   }
 
   render() {
@@ -64,17 +65,26 @@ class TopButtons extends Component {
   }
 }
 
+TopButtons.propTypes = {
+  changeView: PropTypes.func.isRequired,
+  renderAdd: PropTypes.func.isRequired,
+  view: PropTypes.string.isRequired,
+  add_visible: PropTypes.bool.isRequired,
+  authenticated: PropTypes.bool.isRequired
+};
+
 const mapStateToProps = state => ({
   authenticated: state.authentication.authenticated,
   view: state.gui.view,
   add_visible: state.gui.add_visible
 });
 
-const mapDispatchToProps = dispatch => {
-  return {
-    changeView: view => dispatch(changeView(view)),
-    renderAdd: bool => dispatch(renderAdd(bool))
-  };
-};
+const mapDispatchToProps = dispatch => ({
+  changeView: view => dispatch(changeView(view)),
+  renderAdd: bool => dispatch(renderAdd(bool))
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(TopButtons);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(TopButtons);

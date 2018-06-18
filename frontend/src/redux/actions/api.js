@@ -1,8 +1,8 @@
-import { types, API_URL } from "../../utils/constants";
-import { setErrorWithTimeout } from "./error";
-import { validLogin, refreshSession, logoutUser } from "./authentication";
 import axios from "axios";
 import safe from "safe-regex";
+import { types, API_URL } from "../../utils/constants";
+import setErrorWithTimeout from "./error";
+import { validLogin, refreshSession, logoutUser } from "./authentication";
 
 // Setup basic api configuration
 export const api = axios.create({
@@ -15,9 +15,9 @@ function isNotEmptyOrWhitespace(string) {
 }
 
 function buildRequestConfig(page, filter, sort, view, username) {
-  let token = view === "my" ? localStorage.getItem("access_token") : "1.1.1";
-  let url = view === "all" ? "api/all" : `api/all/${username}`;
-  let config = {
+  const token = view === "my" ? localStorage.getItem("access_token") : "1.1.1";
+  const url = view === "all" ? "api/all" : `api/all/${username}`;
+  const config = {
     url,
     method: "get",
     params: {
@@ -34,12 +34,13 @@ function buildRequestConfig(page, filter, sort, view, username) {
   return config;
 }
 
+/* eslint no-underscore-dangle: ["error", { "allow": ["_id", "_items", "_meta"] }] */
 export function getShortcuts(page = 1) {
   return (dispatch, getState) => {
-    let { shortcuts, gui, authentication } = getState();
-    let { filter, sort, loading } = shortcuts;
-    let { view } = gui;
-    let { username, authenticated } = authentication;
+    const { shortcuts, gui, authentication } = getState();
+    const { filter, sort, loading } = shortcuts;
+    const { view } = gui;
+    const { username, authenticated } = authentication;
 
     // Do not fetch new shortcuts if loading in progress or unathorized area.
     if (loading === true || (authenticated === false && view === "my")) {
@@ -47,24 +48,26 @@ export function getShortcuts(page = 1) {
     }
     // Start shortcuts request
     dispatch({ type: types.SHORTCUTS_REQUEST });
-    return api.request(buildRequestConfig(page, filter, sort, view, username)).then(
-      response => {
-        let per_page = parseInt(response.data._meta.max_results, 10);
-        let total = parseInt(response.data._meta.total, 10);
-        let pages = Math.ceil(total / per_page);
-        let page = parseInt(response.data._meta.page, 10);
-        dispatch({
-          type: types.SHORTCUTS_SUCCESS,
-          items: response.data._items,
-          pages,
-          page
-        });
-      },
-      error => {
-        dispatch({ type: types.SHORTCUTS_FAILURE });
-        dispatch(setErrorWithTimeout(error));
-      }
-    );
+    return api
+      .request(buildRequestConfig(page, filter, sort, view, username))
+      .then(
+        response => {
+          const perPage = parseInt(response.data._meta.max_results, 10);
+          const total = parseInt(response.data._meta.total, 10);
+          const pages = Math.ceil(total / perPage);
+          const currentPage = parseInt(response.data._meta.page, 10);
+          dispatch({
+            type: types.SHORTCUTS_SUCCESS,
+            items: response.data._items,
+            pages,
+            page: currentPage
+          });
+        },
+        error => {
+          dispatch({ type: types.SHORTCUTS_FAILURE });
+          dispatch(setErrorWithTimeout(error));
+        }
+      );
   };
 }
 
@@ -75,16 +78,16 @@ export function addShortcut(shortcut) {
     }
     dispatch(refreshSession());
 
-    let { shortcuts, authentication } = getState();
-    let { loading } = shortcuts;
-    let { username, authenticated } = authentication;
+    const { shortcuts, authentication } = getState();
+    const { loading } = shortcuts;
+    const { username, authenticated } = authentication;
 
     // Do not add shortcut if loading in progress or unathorized
     if (authenticated === false || loading === true) {
       return Promise.resolve();
     }
 
-    let config = {
+    const config = {
       url: "api",
       method: "post",
       data: shortcut,
@@ -95,7 +98,7 @@ export function addShortcut(shortcut) {
 
     return api.request(config).then(
       response => {
-        let response_shortcut = {
+        const responseShortcut = {
           _id: response.data._id,
           pattern: shortcut.pattern,
           target: shortcut.target,
@@ -104,7 +107,7 @@ export function addShortcut(shortcut) {
         dispatch({ type: types.ADD_SHORTCUT_TOGGLE });
         return dispatch({
           type: types.ADD_SHORTCUT,
-          shortcut: response_shortcut
+          shortcut: responseShortcut
         });
       },
       error => dispatch(setErrorWithTimeout(error))
@@ -119,34 +122,33 @@ export function updateShortcut(shortcut) {
     }
     dispatch(refreshSession());
 
-    let { shortcuts, authentication } = getState();
-    let { loading, items } = shortcuts;
-    let { authenticated } = authentication;
+    const { shortcuts, authentication } = getState();
+    const { loading, items } = shortcuts;
+    const { authenticated } = authentication;
     // Do not patch shortcut if loading in progress or unathorized
     if (loading === true || authenticated === false) {
       return Promise.resolve();
     }
 
-    let { pattern, target } = shortcut;
-    let index = items.findIndex(item => item._id === shortcut._id);
-    let old_pattern = items[index].pattern;
+    const { pattern, target } = shortcut;
+    const index = items.findIndex(item => item._id === shortcut._id);
+    const oldPattern = items[index].pattern;
 
-    let config = {
+    const config = {
       url: `/api/${shortcut._id}`,
       method: "patch",
-      data: old_pattern === pattern ? { target } : { pattern, target },
+      data: oldPattern === pattern ? { target } : { pattern, target },
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`
       }
     };
 
     return api.request(config).then(
-      response => {
-        return dispatch({
+      () =>
+        dispatch({
           type: types.UPDATE_SHORTCUT,
           shortcut
-        });
-      },
+        }),
       error => dispatch(setErrorWithTimeout(error))
     );
   };
@@ -159,15 +161,15 @@ export function deleteShortcut(id) {
     }
     dispatch(refreshSession());
 
-    let { shortcuts, authentication } = getState();
-    let { loading } = shortcuts;
-    let { authenticated } = authentication;
+    const { shortcuts, authentication } = getState();
+    const { loading } = shortcuts;
+    const { authenticated } = authentication;
     // Do not delete shortcut if loading in progress or unathorized
     if (loading === true || authenticated === false) {
       return Promise.resolve(); // not authenticated or loading in progress
     }
 
-    let config = {
+    const config = {
       url: `/api/${id}`,
       method: "delete",
       headers: {
@@ -184,21 +186,20 @@ export function deleteShortcut(id) {
   };
 }
 
-export function sort_result(sort = "pattern") {
+export function sortResult(sort = "pattern") {
   return (dispatch, getState) => {
     if (sort === getState().shortcuts.sort) {
       return Promise.resolve(); // No change of sort
-    } else {
-      dispatch({
-        type: types.SET_SORT,
-        sort
-      });
-      return dispatch(getShortcuts());
     }
+    dispatch({
+      type: types.SET_SORT,
+      sort
+    });
+    return dispatch(getShortcuts());
   };
 }
 
-export function filter_result(filter = "") {
+export function filterResult(filter = "") {
   return (dispatch, getState) => {
     if (filter === getState().shortcuts.filter) {
       return Promise.resolve(); // No change of filter
@@ -208,9 +209,8 @@ export function filter_result(filter = "") {
         filter
       });
       return dispatch(getShortcuts());
-    } else {
-      // Unsafe filter, no error message since it was annoying
-      return Promise.resolve();
     }
+    // Unsafe filter, no error message since it was annoying
+    return Promise.resolve();
   };
 }

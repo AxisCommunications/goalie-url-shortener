@@ -1,23 +1,21 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 
-export default class InputField extends Component {
-  capitalizeFirstLetter(word) {
-    if (word) {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    }
-  }
-  render() {
-    let {...other} = this.props;
-    return (
-      <input
-        type={
-          this.props.name === "password" || this.props.name === "submit"
-            ? this.props.name
-            : "text"
-        }
-        placeholder={this.capitalizeFirstLetter(this.props.name)}
-        {...other} // load props to input
-      />
-    );
-  }
+export default function InputField(props) {
+  return (
+    <input
+      type={
+        props.name === "password" || props.name === "submit"
+          ? props.name
+          : "text"
+      }
+      // Placeholder is name with first letter in upper-case
+      placeholder={props.name.charAt(0).toUpperCase() + props.name.slice(1)}
+      {...props} // load props to input
+    />
+  );
 }
+
+InputField.propTypes = {
+  name: PropTypes.string
+};

@@ -1,26 +1,19 @@
 import React, { Component } from "react";
-import { getShortcuts } from "../redux/actions/api";
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Paginate from "react-paginate";
+import { getShortcuts } from "../redux/actions/api";
 
 class Pagination extends Component {
-  componentDidUpdate(prevProps) {
-    // Fix for reset on view change
-    if (this.props.page !== prevProps.page) {
-      // Paginate internal index is page-1
-      this._paginate.setState({ selected: this.props.page - 1 });
-    }
-  }
-
   render() {
     return (
       <Paginate
-        ref={a => (this._paginate = a)}
+        forcePage={this.props.page - 1} // Paginate is 0-indexed
         previousLabel={"<"}
         nextLabel={">"}
         pageCount={this.props.pages}
-        marginPagesDisplayed={3}
-        pageRangeDisplayed={6}
+        marginPagesDisplayed={2}
+        pageRangeDisplayed={3}
         onPageChange={page =>
           this.props
             .fetchShortcuts(page.selected + 1)
@@ -29,23 +22,27 @@ class Pagination extends Component {
         containerClassName={"pagination text-center"}
         subContainerClassName={"page"}
         activeClassName={"active"}
-        initialPage={this.props.page - 1}
       />
     );
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    pages: state.shortcuts.pages,
-    page: state.shortcuts.page
-  };
+Pagination.propTypes = {
+  fetchShortcuts: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired,
+  pages: PropTypes.number.isRequired
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchShortcuts: page => dispatch(getShortcuts(page))
-  };
-};
+const mapStateToProps = state => ({
+  pages: state.shortcuts.pages,
+  page: state.shortcuts.page
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(Pagination);
+const mapDispatchToProps = dispatch => ({
+  fetchShortcuts: page => dispatch(getShortcuts(page))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Pagination);

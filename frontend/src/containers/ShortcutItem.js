@@ -1,18 +1,21 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import moment from "moment";
 import { deleteShortcut, updateShortcut } from "../redux/actions/api";
 
 import IconButton from "../components/IconButton";
 
-class shortcutItem extends Component {
+/* eslint no-underscore-dangle: ["error", { "allow": ["_id", "_updated"] }] */
+class ShortcutItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
       editing: false,
       pattern: this.props.shortcut.pattern,
       target: this.props.shortcut.target,
-      date: moment(this.props.shortcut._updated), // Moment.js supports RFC 822 date (RFC2822)
+      // Moment.js supports RFC 822 date (RFC2822)
+      date: moment(this.props.shortcut._updated),
       id: this.props.shortcut._id
     };
     this.enterEdit = this.enterEdit.bind(this);
@@ -39,7 +42,7 @@ class shortcutItem extends Component {
   }
 
   confirmEdit() {
-    let shortcut = {
+    const shortcut = {
       ...this.props.shortcut,
       pattern: this.state.pattern,
       target: this.state.target,
@@ -125,9 +128,8 @@ class shortcutItem extends Component {
       return <span>{this.state.pattern}</span>;
     } else if (field === "target") {
       return <a href={this.state.target}>{this.state.target}</a>;
-    } else {
-      return null;
     }
+    return null;
   }
 
   render() {
@@ -144,19 +146,40 @@ class shortcutItem extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    view: state.gui.view,
-    rights: state.authentication.rights,
-    username: state.authentication.username
-  };
+ShortcutItem.propTypes = {
+  deleteShortcut: PropTypes.func.isRequired,
+  rights: PropTypes.string,
+  shortcut: PropTypes.shape({
+    _created: PropTypes.string,
+    _id: PropTypes.string.isRequired,
+    _links: PropTypes.shape({
+      self: PropTypes.shape({
+        href: PropTypes.string,
+        title: PropTypes.string
+      })
+    }),
+    _updated: PropTypes.string,
+    ldapuser: PropTypes.string.isRequired,
+    pattern: PropTypes.string.isRequired,
+    target: PropTypes.string.isRequired
+  }),
+  updateShortcut: PropTypes.func.isRequired,
+  username: PropTypes.string.isRequired,
+  view: PropTypes.string.isRequired
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    deleteShortcut: id => dispatch(deleteShortcut(id)),
-    updateShortcut: shortcut => dispatch(updateShortcut(shortcut))
-  };
-};
+const mapStateToProps = state => ({
+  view: state.gui.view,
+  rights: state.authentication.rights,
+  username: state.authentication.username
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(shortcutItem);
+const mapDispatchToProps = dispatch => ({
+  deleteShortcut: id => dispatch(deleteShortcut(id)),
+  updateShortcut: shortcut => dispatch(updateShortcut(shortcut))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ShortcutItem);

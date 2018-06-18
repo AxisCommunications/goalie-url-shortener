@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Provider } from "react-redux";
 
 import Header from "./Header";
@@ -12,35 +12,33 @@ import ShortcutsTable from "../containers/ShortcutsTable";
 import ErrorMessage from "../containers/ErrorMessage";
 import store from "../redux/configureStore";
 
-export default class App extends Component {
-  render() {
-    return (
-      <Provider store={store}>
-        <div>
-          <Login />
-          <div className="container">
-            <Header />
-            <ErrorMessage />
-            <TopButtons />
-            <div className="row separator">
-              <SearchBar />
-            </div>
-            <div className="row">
-              <AddShortcut />
-            </div>
-            <div key="table" className="row">
-              <div className="twelve columns">
-                <ShortcutsTable />
-                <p className="separator " />
-              </div>
-            </div>
-            <div>
-              <Pagination />
-            </div>
-            <Footer />
+export default function App() {
+  return (
+    <Provider store={store}>
+      <div>
+        <Login />
+        <div className="container">
+          <Header />
+          <ErrorMessage />
+          <TopButtons />
+          <div className="row separator">
+            <SearchBar />
           </div>
+          <div className="row">
+            <AddShortcut />
+          </div>
+          <div key="table" className="row">
+            <div className="twelve columns">
+              <ShortcutsTable />
+              <p className="separator " />
+            </div>
+          </div>
+          <div>
+            <Pagination />
+          </div>
+          <Footer />
         </div>
-      </Provider>
-    );
-  }
+      </div>
+    </Provider>
+  );
 }

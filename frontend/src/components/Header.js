@@ -1,18 +1,8 @@
 import React from "react";
 import Typist from "react-typist";
 
-function generate_typing_elements(endpoints) {
-  let delay = 1000;
-  return endpoints.map(endpoint => {
-    return [
-      <b>{endpoint}</b>,
-      <Typist.Backspace count={endpoint.length} delay={delay} />
-    ];
-  });
-}
-
 const Header = () => {
-  let endpoints = ["axis", "tools", "google", "gerrit", "galaxis"];
+  const endpoints = ["axis", "tools", "google", "gerrit", "galaxis"];
 
   return (
     <header className="main-header">
@@ -26,7 +16,14 @@ const Header = () => {
             <h1>
               <a href="/">
                 <b>go/</b>
-                {generate_typing_elements(endpoints)}
+                {endpoints.map(endpoint => [
+                  <b key={1}>{endpoint}</b>,
+                  <Typist.Backspace
+                    key={2}
+                    count={endpoint.length}
+                    delay={1000}
+                  />
+                ])}
               </a>
             </h1>
           </Typist>

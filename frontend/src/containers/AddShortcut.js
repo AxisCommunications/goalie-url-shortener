@@ -1,39 +1,32 @@
-import { connect } from "react-redux";
 import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 
 import IconButton from "../components/IconButton";
 import InputField from "../components/InputField";
 import { addShortcut } from "../redux/actions/api";
 import { renderAdd } from "../redux/actions/gui";
-import { url_reg } from "../utils/constants";
+import { urlReg } from "../utils/constants";
+
+const initialState = {
+  shortcut: { pattern: "", target: "" },
+  touched: { pattern: false, target: false },
+  patternValid: "",
+  targetValid: ""
+};
 
 class AddShortcut extends Component {
   constructor(props) {
     super(props);
-    this.state = this.getInitialState();
+    this.state = { ...initialState };
     this.onChange = this.onChange.bind(this);
     this.onFocus = this.onFocus.bind(this);
     this.onConfirm = this.onConfirm.bind(this);
     this.onCancel = this.onCancel.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  getInitialState = () => {
-    const initialState = {
-      shortcut: { pattern: "", target: "" },
-      touched: { pattern: false, target: false },
-      patternValid: "",
-      targetValid: ""
-    };
-    return initialState;
-  };
-
-  resetInputFields() {
-    this.setState(this.getInitialState());
-  }
-
-  capitalizeFirstLetter(word) {
-    return word.charAt(0).toUpperCase() + word.slice(1);
+  reset() {
+    this.setState({ ...initialState });
   }
 
   confirmDisabled() {
@@ -42,12 +35,12 @@ class AddShortcut extends Component {
     );
   }
 
-  validateField(fieldName, value) {
+  validateInput(fieldName, value) {
     if (this.state.touched[fieldName]) {
       switch (fieldName) {
         case "pattern":
           try {
-            new RegExp(value);
+            RegExp(value);
             if (value.length > 0) {
               this.setState({ patternValid: "valid" });
             } else {
@@ -58,7 +51,7 @@ class AddShortcut extends Component {
           }
           break;
         case "target":
-          if (value.match(url_reg)) {
+          if (value.match(urlReg)) {
             this.setState({ targetValid: "valid" });
           } else {
             this.setState({ targetValid: "not-valid" });
@@ -72,13 +65,15 @@ class AddShortcut extends Component {
 
   onConfirm() {
     this.props.addShortcut(this.state.shortcut).then(() => {
-      this.resetInputFields();
+      if (!this.props.visible) {
+        this.reset();
+      }
     });
   }
 
   onCancel() {
     this.props.renderAdd(false);
-    this.resetInputFields();
+    this.reset();
   }
 
   onFocus(event) {
@@ -86,33 +81,28 @@ class AddShortcut extends Component {
       touched: { ...this.state.touched, [event.target.name]: true }
     });
     if (event.target.name === "target" && this.state.shortcut.target === "") {
-      this.setState({ shortcut: { ...this.state.shortcut, target: "https://" } });
+      this.setState({
+        shortcut: { ...this.state.shortcut, target: "https://" }
+      });
     }
   }
 
   onChange(event) {
-    const field = event.target.name;
-    this.validateField(field, event.target.value);
-    const shortcut = this.state.shortcut;
-    shortcut[field] = event.target.value;
-    return this.setState({ shortcut });
-  }
-
-  handleSubmit(event) {
-    event.preventDefault();
-    this.props.addShortcut(this.state.shortcut);
-  }
-
-  componentWillReceiveProps(newProps) {
-    if (newProps.visible === false) {
-      this.resetInputFields();
-    }
+    const { value } = event.target;
+    const { name } = event.target;
+    this.validateInput(name, value);
+    return this.setState({
+      shortcut: {
+        ...this.state.shortcut,
+        [name]: value
+      }
+    });
   }
 
   renderInput(fieldName) {
     return (
       <InputField
-        className={`${fieldName} ${this.state[fieldName + "Valid"]}`}
+        className={`${fieldName} ${this.state[`${fieldName}Valid`]}`}
         name={fieldName}
         value={this.state.shortcut[fieldName]}
         onBlur={() =>
@@ -147,17 +137,22 @@ class AddShortcut extends Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    visible: state.gui.add_visible
-  };
+AddShortcut.propTypes = {
+  addShortcut: PropTypes.func.isRequired,
+  renderAdd: PropTypes.func.isRequired,
+  visible: PropTypes.bool.isRequired
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    renderAdd: bool => dispatch(renderAdd(bool)),
-    addShortcut: shortcut => dispatch(addShortcut(shortcut))
-  };
-};
+const mapStateToProps = state => ({
+  visible: state.gui.add_visible
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddShortcut);
+const mapDispatchToProps = dispatch => ({
+  renderAdd: bool => dispatch(renderAdd(bool)),
+  addShortcut: shortcut => dispatch(addShortcut(shortcut))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(AddShortcut);

@@ -1,11 +1,13 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Icon from "react-icons-kit";
 import { arrowDown } from "react-icons-kit/icomoon/arrowDown";
 import { arrowUp } from "react-icons-kit/icomoon/arrowUp";
-import { getShortcuts, sort_result } from "../redux/actions/api";
+import { getShortcuts, sortResult } from "../redux/actions/api";
 import ShortcutItem from "./ShortcutItem";
 
+/* eslint no-underscore-dangle: ["error", { "allow": ["_id"] }] */
 class ShortcutsTable extends Component {
   constructor(props) {
     super(props);
@@ -17,7 +19,7 @@ class ShortcutsTable extends Component {
 
   sort(order) {
     if (order === this.props.sortOrder) {
-      this.props.sortShortcuts("-" + order);
+      this.props.sortShortcuts(`-${order}`);
     } else {
       this.props.sortShortcuts(order);
     }
@@ -29,9 +31,10 @@ class ShortcutsTable extends Component {
 
   renderArrow(heading) {
     if (this.props.sortOrder.includes(heading)) {
-      let arrow = this.props.sortOrder.includes("-") ? arrowDown : arrowUp;
+      const arrow = this.props.sortOrder.includes("-") ? arrowDown : arrowUp;
       return <Icon icon={arrow} />;
     }
+    return null;
   }
 
   render() {
@@ -69,9 +72,9 @@ class ShortcutsTable extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.props.shortcuts.map(shortcut => {
-              return <ShortcutItem key={shortcut._id} shortcut={shortcut} />;
-            })}
+            {this.props.shortcuts.map(shortcut => (
+              <ShortcutItem key={shortcut._id} shortcut={shortcut} />
+            ))}
           </tbody>
         </table>
       </div>
@@ -79,20 +82,28 @@ class ShortcutsTable extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    shortcuts: state.shortcuts.items,
-    sortOrder: state.shortcuts.sort,
-    view: state.gui.view,
-    rights: state.authentication.rights
-  };
+ShortcutsTable.propTypes = {
+  fetchShortcuts: PropTypes.func.isRequired,
+  rights: PropTypes.string,
+  shortcuts: PropTypes.arrayOf(PropTypes.object).isRequired,
+  sortOrder: PropTypes.string.isRequired,
+  sortShortcuts: PropTypes.func.isRequired,
+  view: PropTypes.string.isRequired
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    fetchShortcuts: () => dispatch(getShortcuts()),
-    sortShortcuts: sort => dispatch(sort_result(sort))
-  };
-};
+const mapStateToProps = state => ({
+  shortcuts: state.shortcuts.items,
+  sortOrder: state.shortcuts.sort,
+  view: state.gui.view,
+  rights: state.authentication.rights
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(ShortcutsTable);
+const mapDispatchToProps = dispatch => ({
+  fetchShortcuts: () => dispatch(getShortcuts()),
+  sortShortcuts: sort => dispatch(sortResult(sort))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ShortcutsTable);

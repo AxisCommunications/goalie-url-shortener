@@ -1,6 +1,6 @@
 import { types } from "../../utils/constants";
 import { api, getShortcuts } from "./api";
-import { setErrorWithTimeout } from "./error";
+import setErrorWithTimeout from "./error";
 
 function timestamp() {
   localStorage.setItem("timestamp", new Date());
@@ -15,20 +15,20 @@ function setLogin(accessToken, refreshToken, rights, username) {
 }
 
 function minutesPassed() {
-  let now = new Date();
-  let login = new Date(localStorage.timestamp);
+  const now = new Date();
+  const login = new Date(localStorage.timestamp);
   return Math.floor((now.getTime() - login.getTime()) / (1000 * 60));
 }
 
 export function validLogin() {
-  let requiredKeys = ["timestamp", "access_token", "refresh_token"];
-  let containsAll = requiredKeys.every(x => x in localStorage);
-  let validToken = minutesPassed() < 10;
+  const requiredKeys = ["timestamp", "access_token", "refresh_token"];
+  const containsAll = requiredKeys.every(x => x in localStorage);
+  const validToken = minutesPassed() < 10;
   return containsAll && validToken;
 }
 
 export function loginUser(credentials) {
-  return (dispatch, getState) => {
+  return dispatch => {
     timestamp();
     dispatch({ type: types.LOGIN_REQUEST, credentials });
     return api.post("/api/login", credentials).then(
@@ -71,7 +71,7 @@ export function refreshSession() {
       return Promise.resolve();
     }
 
-    let config = {
+    const config = {
       url: "/api/refresh",
       method: "post",
       headers: {
@@ -93,9 +93,10 @@ export function refreshSession() {
 }
 
 export function activeSessionCheck() {
-  return (dispatch, getState) => {
+  return dispatch => {
     if (!validLogin()) {
       return dispatch(logoutUser());
     }
+    return Promise.resolve();
   };
 }

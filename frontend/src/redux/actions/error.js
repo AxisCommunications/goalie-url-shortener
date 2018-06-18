@@ -1,6 +1,6 @@
 import { types } from "../../utils/constants";
 
-export function setErrorWithTimeout(error) {
+export default function setErrorWithTimeout(error) {
   return dispatch => {
     setTimeout(() => {
       // clears error after timeout

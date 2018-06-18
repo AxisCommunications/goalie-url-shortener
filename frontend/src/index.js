@@ -8,4 +8,4 @@ import "./assets/css/skeleton.css";
 import "./assets/css/go.css";
 
 ReactDOM.render(<App />, document.getElementById("root"));
-unregister() // Do not use Service Workers and unregister those in use
+unregister(); // Do not use Service Workers and unregister those in use

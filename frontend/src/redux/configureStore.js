@@ -1,11 +1,12 @@
 import { createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
-import app_reducers from "../redux/reducers";
+import appReducers from "../redux/reducers";
 
 const middlewares = [thunk];
-const reducers = [app_reducers];
+const reducers = [appReducers];
 
 // if development add support for redux dev
+/* eslint-disable no-underscore-dangle */
 if (process.env.NODE_ENV !== "production") {
   reducers.push(
     window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()

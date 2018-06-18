@@ -1,9 +1,9 @@
+import update from "immutability-helper";
 import { combineReducers } from "redux";
 import { types } from "../utils/constants";
-import update from "immutability-helper";
 
 // The state before any shortcuts are loaded
-const inital_shortcuts = {
+const initialShortcuts = {
   items: [],
   loading: false,
   filter: "",
@@ -13,9 +13,9 @@ const inital_shortcuts = {
 };
 
 // The initial authentication state is loaded from localstorage if available
-const initial_authentication = {
+const initialAuthentication = {
   loading: false,
-  authenticated: localStorage.getItem("access_token") ? true : false,
+  authenticated: !!localStorage.getItem("access_token"),
   rights: localStorage.getItem("rights") ? localStorage.getItem("rights") : "",
   username: localStorage.getItem("username")
     ? localStorage.getItem("username")
@@ -23,13 +23,13 @@ const initial_authentication = {
 };
 
 // The initial gui state presented to the user
-const initial_gui = {
+const initialGUI = {
   view: "all",
   add_visible: false
 };
 
 // Reducer for interface state
-function gui(state = initial_gui, action) {
+function gui(state = initialGUI, action) {
   switch (action.type) {
     case types.ADD_SHORTCUT_TOGGLE:
       return update(state, {
@@ -40,7 +40,7 @@ function gui(state = initial_gui, action) {
         view: { $set: action.view }
       });
     case types.RESET_GUI:
-      return initial_gui;
+      return initialGUI;
 
     default:
       return state;
@@ -51,16 +51,17 @@ function gui(state = initial_gui, action) {
 function error(state = null, action) {
   switch (action.type) {
     case types.SET_ERROR:
-      return (state = action.error);
+      return action.error;
     case types.CLEAR_ERROR:
-      return (state = null);
+      return null;
     default:
       return state;
   }
 }
 
 // Reducer for shortcut data state
-function shortcuts(state = inital_shortcuts, action) {
+/* eslint no-underscore-dangle: ["error", { "allow": ["_id"] }] */
+function shortcuts(state = initialShortcuts, action) {
   switch (action.type) {
     case types.SHORTCUTS_REQUEST:
       return update(state, {
@@ -80,26 +81,28 @@ function shortcuts(state = inital_shortcuts, action) {
         loading: { $set: false }
       });
     case types.SHORTCUTS_RESET:
-      return inital_shortcuts;
+      return initialShortcuts;
 
     case types.ADD_SHORTCUT:
       return update(state, {
         items: { $push: [action.shortcut] }
       });
 
-    case types.DELETE_SHORTCUT:
-      let index = state.items.findIndex(item => item._id === action.id);
+    case types.DELETE_SHORTCUT: {
+      const index = state.items.findIndex(item => item._id === action.id);
       return update(state, {
         items: { $splice: [[index, 1]] }
       });
+    }
 
-    case types.UPDATE_SHORTCUT:
-      index = state.items.findIndex(item => {
-        return item._id === action.shortcut._id;
-      });
+    case types.UPDATE_SHORTCUT: {
+      const index = state.items.findIndex(
+        item => item._id === action.shortcut._id
+      );
       return update(state, {
         items: { $splice: [[index, 1, action.shortcut]] }
       });
+    }
 
     case types.SET_FILTER:
       return update(state, {
@@ -120,7 +123,7 @@ function shortcuts(state = inital_shortcuts, action) {
   }
 }
 
-function authentication(state = initial_authentication, action) {
+function authentication(state = initialAuthentication, action) {
   switch (action.type) {
     case types.LOGIN_REQUEST:
       return {

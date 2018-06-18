@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { filter_result } from "../redux/actions/api";
+import PropTypes from "prop-types";
 import debounce from "lodash.debounce";
+import { connect } from "react-redux";
+import { filterResult } from "../redux/actions/api";
 
 class SearchBar extends Component {
   constructor(props) {
@@ -23,7 +24,13 @@ class SearchBar extends Component {
   }
 
   updateSearch() {
-    this.props.filter(this.state.value);
+    let search = this.state.value;
+    try {
+      RegExp(this.state.value);
+    } catch (error) {
+      search = encodeURI(this.state.value);
+    }
+    this.props.filter(search);
   }
 
   handleSubmit(event) {
@@ -31,8 +38,8 @@ class SearchBar extends Component {
     this.props.filter(this.state.value);
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.view !== nextProps.view) {
+  componentDidUpdate(prevProps) {
+    if (this.props.view !== prevProps.view) {
       this.setState({ value: "" });
     }
   }
@@ -52,16 +59,20 @@ class SearchBar extends Component {
   }
 }
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    view: state.gui.view
-  };
+SearchBar.propTypes = {
+  filter: PropTypes.func.isRequired,
+  view: PropTypes.string.isRequired
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    filter: input => dispatch(filter_result(input))
-  };
-};
+const mapStateToProps = state => ({
+  view: state.gui.view
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(SearchBar);
+const mapDispatchToProps = dispatch => ({
+  filter: input => dispatch(filterResult(input))
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(SearchBar);

@@ -1,16 +1,13 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 import Icon from "react-icons-kit";
 import { check } from "react-icons-kit/entypo/check";
 import { cross } from "react-icons-kit/entypo/cross";
 import { trash } from "react-icons-kit/entypo/trash";
 import { pencil } from "react-icons-kit/entypo/pencil";
 
-export default class IconButton extends Component {
-  constructor(props) {
-    super(props);
-    this.renderIcon = this.renderIcon.bind(this);
-  }
-  renderIcon(name) {
+export default function IconButton(props) {
+  const renderIcon = name => {
     switch (name) {
       case "check":
         return <Icon icon={check} />;
@@ -23,16 +20,22 @@ export default class IconButton extends Component {
       default:
         return null;
     }
-  }
-  render() {
-    return (
-      <button
-        className={"button icon " + this.props.className}
-        onClick={this.props.onClick}
-        disabled={this.props.disabled}
-      >
-        {this.renderIcon(this.props.icon)}
-      </button>
-    );
-  }
+  };
+
+  return (
+    <button
+      className={`button icon ${props.className}`}
+      onClick={props.onClick}
+      disabled={props.disabled}
+    >
+      {renderIcon(props.icon)}
+    </button>
+  );
 }
+
+IconButton.propTypes = {
+  className: PropTypes.string,
+  onClick: PropTypes.func,
+  icon: PropTypes.string.isRequired,
+  disabled: PropTypes.bool
+};
