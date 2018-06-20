@@ -13,8 +13,8 @@ from flask import abort, jsonify, request
 from flask_cors import cross_origin
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required)
-from ldap3 import ALL, ALL_ATTRIBUTES, SUBTREE, Connection, Server
-from ldap3.core.connection import SIMPLE, SYNC
+from ldap3 import ALL, ALL_ATTRIBUTES, SUBTREE, Connection, Server, AUTO_BIND_TLS_AFTER_BIND
+from ldap3.core.exceptions import LDAPException
 
 
 class PatternValidator(Validator):
@@ -126,14 +126,11 @@ class APITokenAuthenticator(TokenAuth):
         """
         try:
             connection = Connection(self.ldap_server,
-                                    authentication=SIMPLE,
                                     user=username,
                                     password=password,
-                                    client_strategy=SYNC,
-                                    auto_bind=self.app.
-                                    config['AUTH_LDAP_INITIAL_AS_USER'],
+                                    auto_bind=AUTO_BIND_TLS_AFTER_BIND,
                                     raise_exceptions=True)
-        except Exception:
+        except LDAPException:
             self.app.logger.warning("Unable to establish connection to : {}".
                                     format(self.app.config['LDAP_SERVER']))
             return None
@@ -162,8 +159,8 @@ class APITokenAuthenticator(TokenAuth):
             else:
                 identity = ""
             connection.unbind()
-        except Exception as e:
-            self.app.logger.warning(e)
+        except LDAPException as error:
+            self.app.logger.warning(error)
 
         return identity
 
