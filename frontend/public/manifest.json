@@ -1,6 +1,6 @@
 {
-  "short_name": "Go URL Service",
-  "name": "Go: Company URL shortening service",
+  "short_name": "go/",
+  "name": "go/ - Easy to remember URLs as a service.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,6 +10,6 @@
   ],
   "start_url": "./index.html",
   "display": "standalone",
-  "theme_color": "#1EAEDB",
+  "theme_color": "#501aaf",
   "background_color": "#FFFFFF"
 }
