@@ -10,26 +10,39 @@ export const api = axios.create({
   timeout: 5000
 });
 
-function isNotEmptyOrWhitespace(string) {
-  return /\S/.test(string);
-}
-
 function buildRequestConfig(page, filter, sort, view, username) {
-  const token = view === "my" ? localStorage.getItem("access_token") : "1.1.1";
-  const url = view === "all" ? "api/all" : `api/all/${username}`;
+  const url = "api/shortcuts";
   const config = {
     url,
     method: "get",
     params: {
       page,
       sort
-    },
-    headers: { Authorization: `Bearer ${token}` }
+    }
   };
-  if (isNotEmptyOrWhitespace(filter)) {
-    config.params.where = {
-      $or: [{ pattern: { $regex: filter } }, { target: { $regex: filter } }]
-    };
+  if (view === "my") {
+    const token = localStorage.getItem("token");
+    config.params.where = `ldapuser=="${username}"`;
+    config.headers = { Authorization: `bearer ${token}` };
+  }
+  if (/\S/.test(filter)) {
+    if (view === "my") {
+      config.params.where = {
+        $and: [
+          {
+            $or: [
+              { pattern: { $regex: filter } },
+              { target: { $regex: filter } }
+            ]
+          },
+          { ldapuser: username }
+        ]
+      };
+    } else {
+      config.params.where = {
+        $or: [{ pattern: { $regex: filter } }, { target: { $regex: filter } }]
+      };
+    }
   }
   return config;
 }
@@ -78,9 +91,12 @@ export function addShortcut(shortcut) {
     }
     dispatch(refreshSession());
 
-    const { shortcuts, authentication } = getState();
-    const { loading } = shortcuts;
-    const { username, authenticated } = authentication;
+    const {
+      shortcuts: loading,
+      authentication: { username, authenticated }
+    } = getState();
+    // const { loading } = shortcuts;
+    // const { username, authenticated } = authentication;
 
     // Do not add shortcut if loading in progress or unathorized
     if (authenticated === false || loading === true) {
@@ -88,11 +104,11 @@ export function addShortcut(shortcut) {
     }
 
     const config = {
-      url: "api",
+      url: "api/shortcuts",
       method: "post",
       data: shortcut,
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        Authorization: `bearer ${localStorage.getItem("token")}`
       }
     };
 
@@ -135,11 +151,11 @@ export function updateShortcut(shortcut) {
     const oldPattern = items[index].pattern;
 
     const config = {
-      url: `/api/${shortcut._id}`,
+      url: `api/shortcuts/${shortcut._id}`,
       method: "patch",
       data: oldPattern === pattern ? { target } : { pattern, target },
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        Authorization: `bearer ${localStorage.getItem("token")}`
       }
     };
 
@@ -170,10 +186,10 @@ export function deleteShortcut(id) {
     }
 
     const config = {
-      url: `/api/${id}`,
+      url: `api/shortcuts/${id}`,
       method: "delete",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        Authorization: `bearer ${localStorage.getItem("token")}`
       }
     };
 
@@ -210,7 +226,7 @@ export function filterResult(filter = "") {
       });
       return dispatch(getShortcuts());
     }
-    // Unsafe filter, no error message since it was annoying
+    // Unsafe filter, no error message to avoid annoying the user
     return Promise.resolve();
   };
 }

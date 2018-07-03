@@ -26,7 +26,7 @@ class ShortcutsTable extends Component {
   }
 
   shouldDisplayConfigure() {
-    return this.props.view === "my" || this.props.rights === "admin";
+    return this.props.view === "my" || this.props.admin;
   }
 
   renderArrow(heading) {
@@ -84,7 +84,7 @@ class ShortcutsTable extends Component {
 
 ShortcutsTable.propTypes = {
   fetchShortcuts: PropTypes.func.isRequired,
-  rights: PropTypes.string,
+  admin: PropTypes.bool,
   shortcuts: PropTypes.arrayOf(PropTypes.object).isRequired,
   sortOrder: PropTypes.string.isRequired,
   sortShortcuts: PropTypes.func.isRequired,
@@ -95,7 +95,7 @@ const mapStateToProps = state => ({
   shortcuts: state.shortcuts.items,
   sortOrder: state.shortcuts.sort,
   view: state.gui.view,
-  rights: state.authentication.rights
+  admin: state.authentication.admin
 });
 
 const mapDispatchToProps = dispatch => ({

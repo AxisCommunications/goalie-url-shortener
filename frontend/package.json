@@ -5,6 +5,7 @@
   "dependencies": {
     "axios": "^0.17.1",
     "immutability-helper": "^2.6.4",
+    "jwt-decode": "^2.2.0",
     "lodash.debounce": "^4.0.8",
     "moment": "^2.22.1",
     "prop-types": "^15.6.1",

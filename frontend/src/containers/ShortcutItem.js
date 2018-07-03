@@ -26,7 +26,7 @@ class ShortcutItem extends Component {
   }
 
   allowedToEdit() {
-    return this.props.view === "my" || this.props.rights === "admin";
+    return this.props.view === "my" || this.props.admin;
   }
 
   enterEdit() {
@@ -148,7 +148,7 @@ class ShortcutItem extends Component {
 
 ShortcutItem.propTypes = {
   deleteShortcut: PropTypes.func.isRequired,
-  rights: PropTypes.string,
+  admin: PropTypes.bool,
   shortcut: PropTypes.shape({
     _created: PropTypes.string,
     _id: PropTypes.string.isRequired,
@@ -170,7 +170,7 @@ ShortcutItem.propTypes = {
 
 const mapStateToProps = state => ({
   view: state.gui.view,
-  rights: state.authentication.rights,
+  admin: state.authentication.admin,
   username: state.authentication.username
 });
 

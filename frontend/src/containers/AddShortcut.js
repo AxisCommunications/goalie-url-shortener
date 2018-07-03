@@ -9,7 +9,10 @@ import { renderAdd } from "../redux/actions/gui";
 import { urlReg } from "../utils/constants";
 
 const initialState = {
-  shortcut: { pattern: "", target: "" },
+  shortcut: {
+    pattern: "",
+    target: ""
+  },
   touched: { pattern: false, target: false },
   patternValid: "",
   targetValid: ""
@@ -64,7 +67,11 @@ class AddShortcut extends Component {
   }
 
   onConfirm() {
-    this.props.addShortcut(this.state.shortcut).then(() => {
+    const shortcut = {
+      ...this.state.shortcut,
+      ldapuser: this.props.username
+    };
+    this.props.addShortcut(shortcut).then(() => {
       if (!this.props.visible) {
         this.reset();
       }
@@ -140,11 +147,13 @@ class AddShortcut extends Component {
 AddShortcut.propTypes = {
   addShortcut: PropTypes.func.isRequired,
   renderAdd: PropTypes.func.isRequired,
-  visible: PropTypes.bool.isRequired
+  visible: PropTypes.bool.isRequired,
+  username: PropTypes.string
 };
 
 const mapStateToProps = state => ({
-  visible: state.gui.add_visible
+  visible: state.gui.add_visible,
+  username: state.authentication.username
 });
 
 const mapDispatchToProps = dispatch => ({

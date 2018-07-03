@@ -1,48 +1,35 @@
+import jwtDecode from "jwt-decode";
 import { types } from "../../utils/constants";
 import { api, getShortcuts } from "./api";
 import setErrorWithTimeout from "./error";
 
-function timestamp() {
-  localStorage.setItem("timestamp", new Date());
-}
-
-function setLogin(accessToken, refreshToken, rights, username) {
-  timestamp();
-  localStorage.setItem("access_token", accessToken);
-  localStorage.setItem("refresh_token", refreshToken);
-  localStorage.setItem("rights", rights);
-  localStorage.setItem("username", username);
-}
-
-function minutesPassed() {
-  const now = new Date();
-  const login = new Date(localStorage.timestamp);
-  return Math.floor((now.getTime() - login.getTime()) / (1000 * 60));
-}
-
 export function validLogin() {
-  const requiredKeys = ["timestamp", "access_token", "refresh_token"];
+  const requiredKeys = ["token", "username", "admin", "exp"];
   const containsAll = requiredKeys.every(x => x in localStorage);
-  const validToken = minutesPassed() < 10;
-  return containsAll && validToken;
+  const now = new Date();
+  const expires = new Date(localStorage.getItem("exp"));
+
+  return containsAll && expires > now;
 }
 
 export function loginUser(credentials) {
   return dispatch => {
-    timestamp();
     dispatch({ type: types.LOGIN_REQUEST, credentials });
     return api.post("/api/login", credentials).then(
       response => {
-        setLogin(
-          response.data.access_token,
-          response.data.refresh_token,
-          response.data.rights,
-          credentials.username
-        );
+        const { token } = response.data;
+        const { identity, admin, exp, iat } = jwtDecode(token);
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("username", identity);
+        localStorage.setItem("admin", admin);
+        localStorage.setItem("exp", new Date(exp * 1000));
+        localStorage.setItem("iat", new Date(iat * 1000));
+
         return dispatch({
           type: types.LOGIN_SUCCESS,
-          username: credentials.username,
-          rights: response.data.rights
+          username: identity,
+          admin
         });
       },
       error => {
@@ -67,28 +54,25 @@ export function logoutUser() {
 export function refreshSession() {
   return dispatch => {
     // Do not refresh if more than 3 minutes left
-    if (minutesPassed() < 7) {
+    const expires = new Date(localStorage.getItem("exp"));
+    const differenceInMs = expires - new Date();
+    const differenceInMin = Math.round(differenceInMs / 60000);
+    if (differenceInMin > 3) {
       return Promise.resolve();
     }
 
-    const config = {
-      url: "/api/refresh",
-      method: "post",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("refresh_token")}`
-      }
-    };
-    return api.request(config).then(
-      response => {
-        timestamp();
-        localStorage.setItem("access_token", response.data.access_token);
-        return Promise.resolve();
-      },
-      error => {
-        dispatch({ type: types.SET_ERROR, error });
-        return dispatch({ type: types.LOGOUT });
-      }
-    );
+    return api
+      .post("/api/refresh", { token: localStorage.getItem("token") })
+      .then(
+        response => {
+          localStorage.setItem("token", response.data.token);
+          return Promise.resolve();
+        },
+        error => {
+          dispatch({ type: types.SET_ERROR, error });
+          return dispatch({ type: types.LOGOUT });
+        }
+      );
   };
 }
 

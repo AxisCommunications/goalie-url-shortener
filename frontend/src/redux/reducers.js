@@ -1,6 +1,7 @@
 import update from "immutability-helper";
 import { combineReducers } from "redux";
 import { types } from "../utils/constants";
+import { validLogin } from "./actions/authentication";
 
 // The state before any shortcuts are loaded
 const initialShortcuts = {
@@ -15,8 +16,8 @@ const initialShortcuts = {
 // The initial authentication state is loaded from localstorage if available
 const initialAuthentication = {
   loading: false,
-  authenticated: !!localStorage.getItem("access_token"),
-  rights: localStorage.getItem("rights") ? localStorage.getItem("rights") : "",
+  authenticated: validLogin(),
+  admin: localStorage.getItem("admin") === "true",
   username: localStorage.getItem("username")
     ? localStorage.getItem("username")
     : ""
@@ -138,13 +139,14 @@ function authentication(state = initialAuthentication, action) {
         loading: false,
         authenticated: true,
         username: action.username,
-        rights: action.rights
+        admin: action.admin
       };
     case types.LOGOUT:
       return {
         loading: false,
         authenticated: false,
-        username: ""
+        username: "",
+        admin: false
       };
 
     default:
