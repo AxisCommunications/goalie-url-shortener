@@ -1,22 +1,18 @@
-import ssl
+"""
+Settings file for the API.
+"""
 
-# Axis Specific LDAP configuration
-LDAP_SERVER = 'ldap://ldap.example.com'
-LDAP_PORT = 8080
+# LDAP configuration
+LDAP_SERVER = 'ldap.example.com'
+LDAP_SECURE_PORT = 636
+LDAP_SEARCH_BASE = 'dc=example,dc=com'
+LDAP_USER_FIELD = 'sAMAccountName'
+LDAP_ADMIN_FIELD = 'memberOf'
+LDAP_ADMIN_GROUP = \
+    'cn=org-example,ou=role,ou=groups,dc=example,dc=com'
 
-LDAP_USE_TLS = False
-LDAP_REQUIRE_CERT = ssl.CERT_NONE
-AUTH_LDAP_INITIAL_PATTERN = "{}@example.com"
-LDAP_AUTH_BASEDN = 'dc=example,dc=com'
-LDAP_SAMACCOUNT_FILTER = "(sAMAccountName={})"
-LDAP_GROUP_SEARCH_FILTER = "(&" + LDAP_SAMACCOUNT_FILTER + "(memberOf={}))"
-LDAP_CN_MATCH = 'CN=([^,]+),.*'
-
-LDAP_TOOLS_ADMIN_GROUPS = \
-    ["cn=org-example,ou=role,ou=groups,dc=example,dc=com"]
-LDAP_AUTH_ENDPOINTS = {r"api/all": False,
-                       r"api/all/.+": False,
-                       r"api": True}
+# JWT authentication settings
+JWT_EXP_DELTA = 20
 
 ############################################################
 # Python Eve configuration http://python-eve.org/config.html
@@ -26,79 +22,61 @@ LDAP_AUTH_ENDPOINTS = {r"api/all": False,
 MONGO_HOST = 'db'
 MONGO_PORT = 27028
 MONGO_DBNAME = 'aliases_db'
-# Database features to not expose on url params
-MONGO_QUERY_BLACKLIST = ['$where']
+MONGO_QUERY_BLACKLIST = ['$where']  # Enables the regex feature
 
-# Turn off XML response and use JSON
-XML = False
-JSON = True
-# Allowed methods for entire resources, note that delete should not be allowed
-RESOURCE_METHODS = ['GET', 'PATCH', 'POST']
-# Allowed methods for single items
-ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
-# If single item lookup should be available
-ITEM_LOOKUP = True
+# Turn off XML and only utilize the JSON renderer
+RENDERERS = ['eve.render.JSONRenderer']
+
+# Allowed resource methods
+RESOURCE_METHODS = ['GET', 'POST']
+# Resource methods that does not require authentication
+PUBLIC_METHODS = ['GET']
+
+# Allowed item methods
+ITEM_METHODS = ['GET', 'PATCH', 'DELETE']
+# Item methods that does not require authentication
+PUBLIC_ITEM_METHODS = ['GET']
+
 # Disables concurrency control http://python-eve.org/features.html#concurrency
 IF_MATCH = False
 # Disables bulk inserts
 BULK_ENABLED = False
-# Turns off soft delete feature
-SOFT_DELETE = False
+
+
 # Makes development easier can be deleted for increased security
 X_DOMAINS = '*'
-X_ALLOW_CREDENTIALS = True
+# X_ALLOW_CREDENTIALS = True
 X_HEADERS = ['Authorization', 'Content-Type']
 X_EXPOSE_HEADERS = ['Authorization', 'Content-Type']
-# Tells frontend how long the data should be keept on multiple equal requests
+# How long the client should cache the response
 CACHE_CONTROL = 'max-age=6'
 CACHE_EXPIRES = 6
 
+# Let every request go to /api/<endpoint>
+URL_PREFIX = 'api'
+
 # Data validation http://python-eve.org/validation.html
-schema = {
-    'pattern': {
-        'type': 'urlpattern',
-        'required': True,
-        'unique': True,
-    },
-    'target': {
-        'type': 'string',
-        'required': True
-    },
-    'ldapuser': {
-        'type': 'string'
-    }
-}
-all_alias = {
-    'item_title': 'all',
-    'resource_methods': ['GET'],
-    'datasource': {
-        'source': 'aliases_db',
-        'projection': {
-            'pattern': 1,
-            'target': 1,
-            'ldapuser': 1}
-    }
-}
-get_ldapuser_alias = {
-    'url': 'api/all/<regex("[\w\s]+"):ldapuser>',  # pylint: disable=anomalous-backslash-in-string
-    'item_title': 'ldapuser/alias',
-    'resource_methods': ['GET'],
-    'datasource': {
-        'source': 'aliases_db'
-    },
-    'schema': schema
-}
-alias = {
-    'item_title': 'alias',
-    'resource_methods': ['POST'],
-    'item_methods': ['DELETE', 'PATCH', 'PUT'],
-    'datasource': {
-        'source': 'aliases_db'
-    },
-    'schema': schema
-}
 DOMAIN = {
-    'api/all': all_alias,
-    'api/all/user': get_ldapuser_alias,
-    'api': alias
+    'shortcuts': {
+        'item_title': 'shortcuts',
+        'datasource': {
+            'source': 'aliases_db'
+        },
+        'schema': {
+            'pattern': {
+                'type': 'string',
+                'validator': 'regex',
+                'required': True,
+                'unique': True,
+            },
+            'target': {
+                'type': 'string',
+                'required': True
+            },
+            'ldapuser': {
+                'type': 'string',
+                'required': True
+            }
+        }
+    }
 }

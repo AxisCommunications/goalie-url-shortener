@@ -1,332 +1,202 @@
 """
-API for the GO service.
+Utilities used by the go/ service api.
+
+PatternValidator - Cerberus validation class
+http://python-eve.org/validation.html#custom-data-types
+
+JWTAuth - Eve authentication class
+http://python-eve.org/authentication.html#token-based-authentication
 """
 
+import datetime
 import re
 import secrets
-import time
+import ssl
 
 import jwt
+from bson.errors import BSONError
+from bson.objectid import ObjectId
 from eve.auth import TokenAuth
 from eve.io.mongo import Validator
-from flask import abort, jsonify, request
-from flask_cors import cross_origin
-from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                jwt_required)
-from ldap3 import ALL, ALL_ATTRIBUTES, SUBTREE, Connection, Server, AUTO_BIND_TLS_AFTER_BIND
+from eve.render import send_response
+from flask import jsonify, request
+from ldap3 import (AUTO_BIND_TLS_BEFORE_BIND, RESTARTABLE, SUBTREE, Connection,
+                   Server, Tls)
 from ldap3.core.exceptions import LDAPException
 
 
 class PatternValidator(Validator):
-    """
-    Class which validates an incoming regex.
-    """
+    """ Extends the Cerberus validation with custom rules. """
 
-    def __init__(self, application, *args, **kwargs):
-        super(PatternValidator, self).__init__(*args, **kwargs)
-        self.app = application
-
-    def _validate_type_urlpattern(self, field, pattern):
-        """Custom cerberus validator for the schema type urlpattern"""
+    def _validator_regex(self, field, value):
+        """ Test to make sure valid regex value. """
         try:
-            re.compile(pattern)
+            re.compile(value)
         except re.error:
-            self._error(field, "Pattern must be a valid python regex")
-            return
+            self._error(field, '{} is not a valid regex'.format(value))
 
 
-class APITokenAuthenticator(TokenAuth):
-    """
-    Authentication class. It handles all communication with the ldap server
-    and is responsible for creating new tokens for logins.
-    """
-
-    UNAUTHORIZED = 401
+class JWTAuth(TokenAuth):
+    """Rewritten Token Authenticator class that utilizes a ldap connection for
+    the initial authentication then continues the authentication with JWT
+    tokens."""
 
     def __init__(self):
-        super(APITokenAuthenticator, self)
+        self.app = None
+        self.server = None
 
-    def jwt_app(self, app):
-        """
-        When added, generate a new secret and add it to the app config.
-        """
+    def initiate(self, app):
+        """Creates a reference to the app object and initiates the ldap
+        connection by setting configuration options and binding lazily"""
         self.app = app
-        self.app.config['JWT_SECRET_KEY'] = secrets.token_urlsafe(64)
-        self.ldap_server = Server(self.app.config['LDAP_SERVER'],
-                                  self.app.config['LDAP_PORT'], get_info=ALL)
-        self.admin_groups = self.app.config["LDAP_TOOLS_ADMIN_GROUPS"]
+        self.app.config['JWT_SECRET'] = secrets.token_urlsafe(64)
 
-    def _check_empty_token(self):
-        headers = request.headers
-        auth = headers['Authorization']
+        # Set up TLS configuration for ldap connection
+        tls = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1,
+                  ca_certs_file='/usr/src/certs/ldapCA.crt')
 
-        if auth == "Bearer":
-            abort(self.UNAUTHORIZED)
+        # Configure ldap server settings
+        self.server = Server(
+            host=self.app.config['LDAP_SERVER'],
+            port=self.app.config['LDAP_SECURE_PORT'],
+            use_ssl=True,
+            tls=tls,
+            get_info=None
+        )
 
-    def _decode_token(self):
-        """
-        Use to decode a token.
-        """
-        self._check_empty_token()
+    def create_token(self, identity, admin=False):
+        """ Returns a jwt token from the identity and admin fields. """
+        iat = datetime.datetime.utcnow()  # issued at time
+        delta = self.app.config.get('JWT_EXP_DELTA', 10)
+        exp = iat + datetime.timedelta(minutes=delta)  # expiration time
 
-        headers = request.headers
-        auth = headers['Authorization']
+        payload = {
+            'iat': iat,
+            'exp': exp,
+            'identity': identity,
+            'admin': admin
+        }
 
-        if auth:
-            token = auth.split(" ")[1]
-            try:
-                decoded_token = jwt.decode(
-                    token, self.app.config['JWT_SECRET_KEY'])
-                return decoded_token
-            except:
-                abort(self.UNAUTHORIZED)
-        else:
-            abort(self.UNAUTHORIZED)
+        return jwt.encode(payload, self.app.config.get('JWT_SECRET'),
+                          algorithm='HS256')
 
-    def _is_in_admin_group(self, username, connection):
-        """
-        Check if the user is part of a admin group.
-        """
-        is_admin = False
-        for group in self.admin_groups:
-            if connection.search(
-                    search_base=self.app.config['LDAP_AUTH_BASEDN'],
-                    search_filter=self.app.
-                    config['LDAP_GROUP_SEARCH_FILTER'].format(username, group),
-                    search_scope=SUBTREE,
-                    attributes=ALL_ATTRIBUTES):
-                is_admin = True
-                break
-        return is_admin
+    def refresh(self):
+        """ A flask endpoint to refresh the jwt token. Must be provided with a
+        valid jwt token. """
+        method = request.method
+        resource = request.endpoint.split("|")[0]  # /refresh -> refresh
 
-    def _find_full_name(self, user, connection):
-        """
-        Find the full name of a user.
-        """
-        connection.search(search_base=self.app.config['LDAP_AUTH_BASEDN'],
-                          search_filter=self.app.
-                          config['LDAP_SAMACCOUNT_FILTER'].format(user),
-                          search_scope=SUBTREE,
-                          attributes=ALL_ATTRIBUTES)
-        if not connection.response:
-            return ""
+        if method == 'OPTIONS':  # CORS request
+            return send_response(resource, None)
+
+        if not request.is_json:
+            return jsonify({"msg": "Missing JSON in request"}), 400
+
+        token = request.json.get('token', None)
+        if not token:
+            return jsonify({"msg": "Missing token parameter"}), 400
 
         try:
-            samaccountname = connection.response[0][
-                'raw_attributes']['sAMAccountName']
-        except KeyError:
-            samaccountname = None
+            payload = jwt.decode(token, self.app.config.get(
+                'JWT_SECRET'), algorithms='HS256')
+        except jwt.exceptions.DecodeError:
+            return jsonify({'msg': 'Invalid token'}), 401
 
-        return str(samaccountname[0], 'utf-8') if samaccountname else ""
+        identity = payload.get('identity', '')
+        admin = payload.get('admin', False)
+        token = self.create_token(identity, admin=admin)
 
-    def _get_ldap_connection(self, username, password):
-        """
-        Trying to establish a connection. If it fails, it returns a None
-        connection.
-        """
-        try:
-            connection = Connection(self.ldap_server,
-                                    user=username,
-                                    password=password,
-                                    auto_bind=AUTO_BIND_TLS_AFTER_BIND,
-                                    raise_exceptions=True)
-        except LDAPException:
-            self.app.logger.warning("Unable to establish connection to : {}".
-                                    format(self.app.config['LDAP_SERVER']))
-            return None
-        return connection
+        return send_response(resource, ({'token': token},))
 
-    def ldap_auth(self, username, password):
-        """
-        Authenticate a user against a LDAP server.
-        """
-        ldap_user = self.app.config['AUTH_LDAP_INITIAL_PATTERN'].format(
-            username)
-
-        try:
-            connection = self._get_ldap_connection(ldap_user, password)
-            if not connection:
-                return ""
-
-            full_name = self._find_full_name(username, connection)
-
-            if full_name:
-                identity = "{};{}".format(
-                    full_name,
-                    "user" if not self._is_in_admin_group(
-                        username, connection) else
-                    "admin")
-            else:
-                identity = ""
-            connection.unbind()
-        except LDAPException as error:
-            self.app.logger.warning(error)
-
-        return identity
-
-    def get_user_and_group(self):
-        """
-        Get the current user and group from a request.
-        """
-
-        decoded_token = self._decode_token()
-
-        identity = decoded_token['identity']
-
-        user_group = identity.split(";")
-        return user_group
-
-    @cross_origin()
     def login(self):
-        """
-        Use this endpoint to login and to obtain a token.
-        Must be provided with ldap user credentials.
-        """
-        username = request.json.get('username', None)
+        """ A flask endpoint to login and to obtain a token. Must be provided
+        with valid ldap user credentials. """
+        method = request.method
+        resource = request.endpoint.split("|")[0]  # /login -> login
+
+        if method == 'OPTIONS':  # CORS request
+            return send_response(resource, None)
+
+        if not request.is_json:
+            return jsonify({"msg": "Missing JSON in request"}), 400
+
+        username = request.json.get('username', None).lower()  # Note lowercase
         password = request.json.get('password', None)
+        if not username:
+            return jsonify({"msg": "Missing username parameter"}), 400
+        if not password:
+            return jsonify({"msg": "Missing password parameter"}), 400
 
-        if not username or not password:
-            return jsonify({"msg": "Missing either username or password"}), 401
+        user = '{}@example.com'.format(username)
 
-        identity = self.ldap_auth(username, password)
-        if not identity:
+        ldap_filter = '(&({user_field}={user})({admin_field}={admin_group}))'.\
+            format(user_field=self.app.config['LDAP_USER_FIELD'],
+                   user=username,
+                   admin_field=self.app.config['LDAP_ADMIN_FIELD'],
+                   admin_group=self.app.config['LDAP_ADMIN_GROUP'])
+
+        try:
+            with Connection(self.server,
+                            user=user,
+                            password=password,
+                            read_only=True,
+                            raise_exceptions=True) as conn:
+
+                conn.search(search_base='dc=example,dc=com',
+                            search_filter=ldap_filter,
+                            search_scope=SUBTREE)
+
+                if conn.entries:
+                    token = self.create_token(username, admin=True)
+                else:
+                    token = self.create_token(username, admin=False)
+                response = send_response(resource, ({"token": token},))
+                return response
+        except LDAPException as err:
+            # LDAP error the user credentials are not valid
+            self.app.logger.error(err)
             return jsonify({"msg": "Invalid credentials"}), 401
 
-        user = identity.split(';')[1]
-        tokens = {
-            'rights': user,
-            'access_token': create_access_token(identity=identity),
-            'refresh_token': create_refresh_token(identity=identity)
-        }
-        return jsonify(tokens), 200
-
-    #@jwt_refresh_token_required
-    @cross_origin(expose_headers=['Authorization', 'Content-Type'])
-    def refresh(self):
-        """
-        Generate a new access token given a refresh token.
-        """
-        current_user = ';'.join(self.get_user_and_group())
-        tokens = {
-            'access_token': create_access_token(identity=current_user)
-        }
-
-        return jsonify(tokens), 200
-
-    @jwt_required
     def check_auth(self, token, allowed_roles, resource, method):
-        """
-        Function for really check if a token is valid.
-        """
-        return True
+        """Checks if authentication provided is valid and if the user is
+        authorized on the resource"""
 
-    def authorized(self, allowed_roles, resource, method):
-        """
-        Search for endpoints that are allowed to be called without
-        authentication. Otherwise find the token and then authenticate.
-        """
-        self._check_empty_token()
+        logger = self.app.logger
+        path = request.path.split('/')[-1]
+        logger.warn("Path: %s", path)
 
-        auth_endpoints = self.app.config['LDAP_AUTH_ENDPOINTS']
-        for res in auth_endpoints:
-            match = re.compile(res)
-            if match.fullmatch(resource) and not auth_endpoints[res]:
-                return True
+        try:
+            payload = jwt.decode(token, self.app.config.get(
+                'JWT_SECRET'), algorithms='HS256')
+            logger.warn("payload: %s", payload)
+            identity = payload.get('identity')
+            logger.warn("identity: %s", identity)
+            admin = payload.get('admin', False)
+            logger.warn("admin: %s", admin)
 
-        return super(APITokenAuthenticator, self).authorized(allowed_roles,
-                                                             resource, method)
+            # Posting new shortcut
+            if path == 'shortcuts' and method == 'POST' and identity:
+                ldapuser = request.json.get('ldapuser')
+                logger.warn("ldapuser: %s", ldapuser)
+                return identity == ldapuser
 
+            # Patching or deleting existing shortcut
+            elif method == 'PATCH' or method == 'DELETE':
+                if admin:
+                    return True
 
-class API:
-    """
-    Class which represents the Go API. It takes care of authentication of users.
-    """
-    ACCESS_DENIED = 401
-    METHOD_NOT_ALLOWED = 405
+                item_id = path
+                shortcuts = self.app.data.driver.db['aliases_db']
+                shortcut = shortcuts.find_one({'_id': ObjectId(item_id)})
+                ldapuser = shortcut.get('ldapuser')
 
-    def __init__(self, app):
-        self.app = app
-        self.ldap_server = Server(self.app.config['LDAP_SERVER'],
-                                  self.app.config['LDAP_PORT'])
+                if ldapuser and identity:
+                    return ldapuser == identity
 
-    def lookup_user(self, lookup):
-        """
-        Decide which entries a user has access to.
-        """
-        user_group = self.app.auth.get_user_and_group()
-        if not user_group:
-            abort(self.METHOD_NOT_ALLOWED)
-        else:
-            if user_group[1] == "user":
-                lookup['ldapuser'] = {'$eq': user_group[0]}
-        return lookup
-
-    def pre_patch(self, resource, flask_request, lookup):
-        """
-        Check which group a user belongs to. If in user, then filter out all
-        entries that belongs to the user. Users in the admin group can update
-        all entries.
-        """
-        del resource, flask_request # Ignored parameters
-        lookup = self.lookup_user(lookup)
-
-    def pre_delete(self, resource, flask_request, lookup):
-        """
-        Check which group a user belongs to. If in user, then filter out all
-        entries that belongs to the user. Users in the admin group can delete
-        all entries.
-        """
-        del resource, flask_request # Ignored parameters
-        lookup = self.lookup_user(lookup)
-
-    def deleted_item(self, flask_request, item):
-        """
-        Inform that an deletion has been made.
-        """
-        del flask_request # Ignored parameter
-        user_group = self.app.auth.get_user_and_group()
-        now = time.strftime("%Y-%m-%d %H:%M:%S")
-        self.app.logger.debug(("{}: Delete performed " +
-                               "by {} on alias {}").format(now,
-                                                           user_group[0],
-                                                           item['pattern']))
-
-    def insert(self, resource, updates):
-        """
-        Links a user to a inserted alias pattern pair.
-        """
-        del resource # Ignored parameter
-        user_group = self.app.auth.get_user_and_group()
-
-        if not user_group:
-            abort(self.METHOD_NOT_ALLOWED)
-        else:
-            for update in updates:
-                update['ldapuser'] = user_group[0]
-
-    def inserted_item(self, resource, item):
-        """
-        Inform that an insertion has been made.
-        """
-        del resource # Ignored parameter
-        user_group = self.app.auth.get_user_and_group()
-        now = time.strftime("%Y-%m-%d %H:%M:%S")
-        self.app.logger.debug(("{}: Insert performed by " +
-                               "{}, inserted {}").format(now,
-                                                         user_group[0],
-                                                         item[0]['pattern']))
-
-    def updated_item(self, resource, updates, original):
-        """
-        Inform that a user has updated an item.
-        """
-        del resource # Ignored parameter
-        user_group = self.app.auth.get_user_and_group()
-
-        update_time = updates['_updated']
-        update_time = update_time.strftime("%Y-%m-%d %H:%M:%S")
-        self.app.logger.debug(("{}: Patch performed by {} " +
-                               "on {} to {}").format(update_time,
-                                                     user_group[0],
-                                                     original['target'],
-                                                     updates['target']))
+        except jwt.exceptions.DecodeError as err:  # Invalid token
+            logger.warn("JwtDecodeError: %s", err)
+            return False
+        except BSONError as err:  # Invalid _id field
+            logger.warn("BSONError: %s", err)
+            return False
+        return False  # Default case

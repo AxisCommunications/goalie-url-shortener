@@ -20,6 +20,8 @@ services:
     networks:
       - db_net
       - web_net
+    volumes:
+      - "$LDAP_CA_PATH:/usr/src/certs/ldapCA.crt:ro"
     depends_on:
       - db
     restart: unless-stopped

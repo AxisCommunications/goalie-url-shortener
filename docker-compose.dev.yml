@@ -20,7 +20,12 @@ services:
       - "5000:5000"
     volumes:
       - ./backend/api:/usr/src/app
-    command: ["python", "run.py"] # overrides the uwsgi server
+      - "$LDAP_CA_PATH:/usr/src/certs/ldapCA.crt:ro"
+    environment:
+      FLASK_APP: "run.py"
+      FLASK_ENV: "development"
+      FLASK_DEBUG: 1
+    command: ["flask", "run", "--host=0.0.0.0"]  # overrides the uwsgi server
 
   service:
     build:
@@ -37,5 +42,6 @@ services:
       - ./backend/service:/usr/src/app
     environment:
       FLASK_APP: "service.py"
+      FLASK_ENV: "development"
       FLASK_DEBUG: 1
     command: ["flask", "run", "--host=0.0.0.0"]  # overrides the uwsgi server
