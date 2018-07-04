@@ -71,6 +71,7 @@ DOMAIN = {
             },
             'target': {
                 'type': 'string',
+                'validator': 'target',
                 'required': True
             },
             'ldapuser': {

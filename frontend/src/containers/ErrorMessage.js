@@ -21,14 +21,15 @@ class ErrorMessage extends Component {
         case 422: {
           // Unable to process error
           const issues = error.response.data._issues;
-          if (issues) {
-            if (issues.pattern instanceof Array) {
-              return `Invalid pattern: ${issues.pattern.join(" and ")}`;
-            } else if (typeof issues.pattern === "string") {
-              return `Invalid pattern: ${issues.pattern}`;
-            }
-          }
-          return "Unable to process request.";
+
+          if (issues.pattern instanceof Array)
+            return `Invalid pattern: ${issues.pattern.join(" and ")}`;
+          if (typeof issues.pattern === "string")
+            return `Invalid pattern: ${issues.pattern}`;
+          if (typeof issues.target === "string")
+            return `Invalid target: ${issues.target}`;
+
+          return "Unable to process request."; // Default case
         }
         case 404: {
           // Not found error
