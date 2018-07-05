@@ -17,6 +17,7 @@ a {
 /* lato-regular - latin-ext */
 @font-face {
   font-family: "Lato";
+  font-display: auto;
   font-style: normal;
   font-weight: 400;
   src: local("Lato Regular"), local("Lato-Regular"),
@@ -27,6 +28,7 @@ a {
 /* shrikhand-regular - latin-ext */
 @font-face {
   font-family: "Shrikhand";
+  font-display: auto;
   font-style: normal;
   font-weight: 400;
   src: local("Shrikhand Regular"), local("Shrikhand-Regular"),
@@ -279,7 +281,7 @@ div.error-message {
 
 .pagination li.disabled a {
   cursor: default;
-  color: lightgrey;
+  color: dimgrey;
 }
 
 .pagination .break a {
@@ -287,7 +289,7 @@ div.error-message {
 }
 
 .pagination .active a {
-  color: grey;
+  color: #4f4f4f;
   font-size: 35px;
 }
 

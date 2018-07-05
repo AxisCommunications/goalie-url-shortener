@@ -50,7 +50,6 @@ X_HEADERS = ['Authorization', 'Content-Type']
 X_EXPOSE_HEADERS = ['Authorization', 'Content-Type']
 # How long the client should cache the response
 CACHE_CONTROL = 'max-age=6'
-CACHE_EXPIRES = 6
 
 # Let every request go to /api/<endpoint>
 URL_PREFIX = 'api'
