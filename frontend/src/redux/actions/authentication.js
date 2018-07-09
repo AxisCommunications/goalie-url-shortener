@@ -1,5 +1,6 @@
 import jwtDecode from "jwt-decode";
 import { types } from "../../utils/constants";
+// eslint-disable-next-line import/no-cycle
 import { api, getShortcuts } from "./api";
 import setErrorWithTimeout from "./error";
 

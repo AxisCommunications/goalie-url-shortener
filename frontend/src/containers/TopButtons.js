@@ -10,6 +10,7 @@ class TopButtons extends Component {
     this.handleAll = this.handleAll.bind(this);
     this.handleMy = this.handleMy.bind(this);
   }
+
   handleAll() {
     this.props.changeView("all");
   }

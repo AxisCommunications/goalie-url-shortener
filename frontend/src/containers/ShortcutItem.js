@@ -115,7 +115,8 @@ class ShortcutItem extends Component {
   renderField(field) {
     if (field === "buttons" && this.allowedToEdit()) {
       return this.renderEditButtons();
-    } else if (this.state.editing) {
+    }
+    if (this.state.editing) {
       return (
         <input
           className="shortcut-edit"
@@ -124,9 +125,11 @@ class ShortcutItem extends Component {
           onChange={event => this.setState({ [field]: event.target.value })}
         />
       );
-    } else if (field === "pattern") {
+    }
+    if (field === "pattern") {
       return <span>{this.state.pattern}</span>;
-    } else if (field === "target") {
+    }
+    if (field === "target") {
       return <a href={this.state.target}>{this.state.target}</a>;
     }
     return null;

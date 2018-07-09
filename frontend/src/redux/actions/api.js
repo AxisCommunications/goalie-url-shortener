@@ -2,6 +2,7 @@ import axios from "axios";
 import safe from "safe-regex";
 import { types, API_URL } from "../../utils/constants";
 import setErrorWithTimeout from "./error";
+// eslint-disable-next-line import/no-cycle
 import { validLogin, refreshSession, logoutUser } from "./authentication";
 
 // Setup basic api configuration
@@ -219,7 +220,8 @@ export function filterResult(filter = "") {
   return (dispatch, getState) => {
     if (filter === getState().shortcuts.filter) {
       return Promise.resolve(); // No change of filter
-    } else if (safe(filter)) {
+    }
+    if (safe(filter)) {
       dispatch({
         type: types.SET_FILTER,
         filter

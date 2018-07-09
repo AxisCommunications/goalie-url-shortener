@@ -13,6 +13,7 @@ class ShortcutsTable extends Component {
     super(props);
     this.sort = this.sort.bind(this);
   }
+
   componentDidMount() {
     this.props.fetchShortcuts();
   }

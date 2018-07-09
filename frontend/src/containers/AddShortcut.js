@@ -123,6 +123,7 @@ class AddShortcut extends Component {
       />
     );
   }
+
   render() {
     return this.props.visible ? (
       <div className="ten columns offset-by-one add-group">
