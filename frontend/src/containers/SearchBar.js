@@ -53,6 +53,7 @@ class SearchBar extends Component {
           placeholder="Search"
           value={this.state.value}
           onChange={this.handleChange}
+          autoFocus
         />
       </form>
     );
