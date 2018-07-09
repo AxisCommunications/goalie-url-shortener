@@ -14,13 +14,16 @@ from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
 
 # Initialize the application.
-app = Flask(__name__)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+app = Flask(__name__)
 
 # Basic configuration
 app.config.update(
-    MONGO_HOST='db',
-    MONGO_PORT=27028,
-    MONGO_DBNAME='aliases_db'
+    MONGO_URI='mongodb://{host}:{port}/{database}'.format(
+        host='db',
+        port=27028,
+        database='aliases_db'
+    )
 )
 
 # Initialize database connection
@@ -35,6 +38,7 @@ def sort_regex(shortcut_list):
         3. Regex string in alphabetical order (exception for '.', '?')
     """
     def ranking(item):
+        """ Sorting function """
         regex = item['pattern'] + '$'
         regex_max_width = int(sre_parse.parse(regex).getwidth()[1])
 
@@ -52,7 +56,7 @@ def sort_regex(shortcut_list):
         alphabetical = re.sub(r'[.?*)]', u"\U0010FFFF", a)
 
         # patterns with infinite wildcards like \d+ or .*
-        if (regex_max_width >= int(sre_constants.MAXREPEAT)):
+        if regex_max_width >= int(sre_constants.MAXREPEAT):
             # in this case longer string more specific
             length = -length
         return (regex_max_width, length, alphabetical)
@@ -66,27 +70,22 @@ def best_target_match(alias, items):
     """
     items = sort_regex(items)
 
-    app.logger.debug("Sorted: %s", items)
-
     for item in items:
         match = re.match(item['pattern']+"$", alias, re.I)
         if match:
             # Only substitute matching part of alias
-            app.logger.debug("Item: %s", item)
             target = re.sub(
                 "^" + item['pattern'] + "$",  # make sure entire pattern
                 item['target'],
                 match.group(0),  # only matching part not entire alias
                 flags=re.I  # case insensitive
             )
-            app.logger.debug("Target: %s", target)
             return target
 
 
 @app.route('/<path:alias>')
 def go_routing(alias):
     """ Takes alias and redirects user to target found in database. """
-    app.logger.debug("Alias: %s", alias)
 
     # Reverse regex match
     query = {
@@ -96,9 +95,7 @@ def go_routing(alias):
             format(urllib.parse.quote(alias))
     }
 
-    app.logger.debug("Search: %s", query)
     result = list(mongo.db.aliases_db.find(query))
-    app.logger.debug("Result: %s", result)
     target = best_target_match(alias, result)
     if target is not None:
         return redirect(target)

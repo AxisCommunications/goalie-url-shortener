@@ -19,9 +19,11 @@ JWT_EXP_DELTA = 20
 ############################################################
 
 # Database configuration
-MONGO_HOST = 'db'
-MONGO_PORT = 27028
-MONGO_DBNAME = 'aliases_db'
+MONGO_URI = 'mongodb://{host}:{port}/{database}'.format(
+    host='db',
+    port=27028,
+    database='aliases_db'
+)
 MONGO_QUERY_BLACKLIST = ['$where']  # Enables the regex feature
 
 # Turn off XML and only utilize the JSON renderer
