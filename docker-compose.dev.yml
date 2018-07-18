@@ -6,6 +6,8 @@ services:
     volumes:
       - ~/mongodb/data:/data/db
     command: mongod --port 27028
+    ports:
+      - "27017:27028"
 
   api:
     build:

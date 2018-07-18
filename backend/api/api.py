@@ -185,32 +185,25 @@ class JWTAuth(TokenAuth):
                     token = self.create_token(username, admin=False)
                 response = send_response(resource, ({"token": token},))
                 return response
-        except LDAPException as err:
+        except LDAPException:
             # LDAP error the user credentials are not valid
-            self.app.logger.error(err)
             return jsonify({"msg": "Invalid credentials"}), 401
 
     def check_auth(self, token, allowed_roles, resource, method):
         """Checks if authentication provided is valid and if the user is
         authorized on the resource"""
 
-        logger = self.app.logger
         path = request.path.split('/')[-1]
-        logger.warn("Path: %s", path)
 
         try:
             payload = jwt.decode(token, self.app.config.get(
                 'JWT_SECRET'), algorithms='HS256')
-            logger.warn("payload: %s", payload)
             identity = payload.get('identity')
-            logger.warn("identity: %s", identity)
             admin = payload.get('admin', False)
-            logger.warn("admin: %s", admin)
 
             # Posting new shortcut
             if path == 'shortcuts' and method == 'POST' and identity:
                 ldapuser = request.json.get('ldapuser')
-                logger.warn("ldapuser: %s", ldapuser)
                 return identity == ldapuser
 
             # Patching or deleting existing shortcut
@@ -226,10 +219,8 @@ class JWTAuth(TokenAuth):
                 if ldapuser and identity:
                     return ldapuser == identity
 
-        except jwt.exceptions.DecodeError as err:  # Invalid token
-            logger.warn("JwtDecodeError: %s", err)
+        except jwt.exceptions.DecodeError:  # Invalid token
             return False
-        except BSONError as err:  # Invalid _id field
-            logger.warn("BSONError: %s", err)
+        except BSONError:  # Invalid _id field
             return False
         return False  # Default case
