@@ -9,6 +9,6 @@ COPY . .
 RUN yarn build
 
 # Use nginx to host the static files, configuration inserted via docker-compose
-FROM nginx:1.13
+FROM nginx:1.15-alpine
 # Get built frontend files from the node container
 COPY --from=builder /usr/src/app/build /usr/share/nginx/html
