@@ -22,4 +22,9 @@ USER flask
 
 # If running this app behind a webserver using the uwsgi protocol (like nginx),
 # then use --socket.  Otherwise run with --http to run as a full http server.
-CMD ["uwsgi", "--socket", ":5002", "--wsgi-file", "service.py", "--callable", "app", "--processes",  "1", "--threads", "2", "--master", "--lazy-apps"]
+CMD ["uwsgi", "--socket", ":5002", \
+    "--wsgi-file", "service.py", \
+    "--callable", "app", \
+    "--processes",  "1", \
+    "--threads", "10", \
+    "--master"]
