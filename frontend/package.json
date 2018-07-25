@@ -11,7 +11,7 @@
     "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "react-icons-kit": "1.1.5",
+    "react-icons-kit": "^1.1.7",
     "react-paginate": "^5.0.0",
     "react-redux": "^5.0.6",
     "react-scripts": "1.1.4",
