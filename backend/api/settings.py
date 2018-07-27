@@ -21,7 +21,7 @@ JWT_EXP_DELTA = 20
 # Database configuration
 MONGO_URI = 'mongodb://{host}:{port}/{database}'.format(
     host='db',
-    port=27028,
+    port=27017,
     database='aliases_db'
 )
 MONGO_QUERY_BLACKLIST = ['$where']  # Enables the regex feature

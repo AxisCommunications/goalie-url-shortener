@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.config.update(
     MONGO_URI='mongodb://{host}:{port}/{database}'.format(
         host='db',
-        port=27028,
+        port=27017,
         database='aliases_db'
     )
 )
