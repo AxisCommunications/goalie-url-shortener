@@ -18,12 +18,8 @@ services:
        - no_proxy
     networks:
        - db_net
-    volumes:
-       - ~/backup:/backup
     environment:
-      CRON_SCHEDULE: '*/5 * * * *'
       MONGO_HOST: 'db'
-      MONGO_DATABASE: 'aliases_db'
     depends_on:
       - db
 
