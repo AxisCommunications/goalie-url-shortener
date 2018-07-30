@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import Icon from "react-icons-kit";
-import { arrowDown } from "react-icons-kit/icomoon/arrowDown";
-import { arrowUp } from "react-icons-kit/icomoon/arrowUp";
+import { sortAmountAsc } from "react-icons-kit/fa/sortAmountAsc";
+import { sortAmountDesc } from "react-icons-kit/fa/sortAmountDesc";
 import { getShortcuts, sortResult } from "../redux/actions/api";
 import ShortcutItem from "./ShortcutItem";
 
@@ -32,7 +32,9 @@ class ShortcutsTable extends Component {
 
   renderArrow(heading) {
     if (this.props.sortOrder.includes(heading)) {
-      const arrow = this.props.sortOrder.includes("-") ? arrowDown : arrowUp;
+      const arrow = this.props.sortOrder.includes("-")
+        ? sortAmountDesc
+        : sortAmountAsc;
       return <Icon icon={arrow} />;
     }
     return null;
