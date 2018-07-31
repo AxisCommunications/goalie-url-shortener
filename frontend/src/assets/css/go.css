@@ -17,7 +17,7 @@ a {
 /* lato-regular - latin-ext */
 @font-face {
   font-family: "Lato";
-  font-display: auto;
+  font-display: block;
   font-style: normal;
   font-weight: 400;
   src: local("Lato Regular"), local("Lato-Regular"),
@@ -28,7 +28,7 @@ a {
 /* shrikhand-regular - latin-ext */
 @font-face {
   font-family: "Shrikhand";
-  font-display: auto;
+  font-display: block;
   font-style: normal;
   font-weight: 400;
   src: local("Shrikhand Regular"), local("Shrikhand-Regular"),
@@ -195,7 +195,6 @@ td.configure.edit {
   max-width: 110px;
   min-width: 110px;
 }
-
 
 /* Table item edit */
 input.shortcut-edit {
