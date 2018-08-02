@@ -160,7 +160,7 @@ class JWTAuth(TokenAuth):
         if not password:
             return jsonify({"msg": "Missing password parameter"}), 400
 
-        user = '{}@example.com'.format(username)
+        user = '{}@{}'.format(username, self.app.config['LDAP_EMAIL_DOMAIN'])
 
         ldap_filter = '(&({user_field}={user})({admin_field}={admin_group}))'.\
             format(user_field=self.app.config['LDAP_USER_FIELD'],
@@ -175,7 +175,7 @@ class JWTAuth(TokenAuth):
                             read_only=True,
                             raise_exceptions=True) as conn:
 
-                conn.search(search_base='dc=example,dc=com',
+                conn.search(search_base=self.app.config['LDAP_SEARCH_BASE'],
                             search_filter=ldap_filter,
                             search_scope=SUBTREE)
 

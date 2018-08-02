@@ -7,6 +7,7 @@ LDAP_SERVER = 'ldap.example.com'
 LDAP_SECURE_PORT = 636
 LDAP_SEARCH_BASE = 'dc=example,dc=com'
 LDAP_USER_FIELD = 'sAMAccountName'
+LDAP_EMAIL_DOMAIN = 'example.com'
 LDAP_ADMIN_FIELD = 'memberOf'
 LDAP_ADMIN_GROUP = \
     'cn=org-example,ou=role,ou=groups,dc=example,dc=com'
