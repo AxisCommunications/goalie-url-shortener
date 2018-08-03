@@ -37,7 +37,9 @@ class Login extends Component {
 
   onLogin(event) {
     event.preventDefault();
-    this.props.login(this.state.credentials);
+    if (this.state.credentials.username && this.state.credentials.password) {
+      this.props.login(this.state.credentials);
+    }
   }
 
   onLogout(event) {

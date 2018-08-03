@@ -6,15 +6,19 @@ import { connect } from "react-redux";
 class ErrorMessage extends Component {
   parseError() {
     const { error } = this.props;
-
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       switch (error.response.status) {
         case 400: {
           // Bad request error
-          const msg = error.response.data._error.message;
-          return `The sent information could not be processed. ${msg}`;
+          if (error.response.data.msg) {
+            return error.response.data.msg;
+          }
+          if (error.response.data._error.message) {
+            return error.response.data._error.message;
+          }
+          return `The sent information could not be processed.`;
         }
         case 401: // Authentication error
           return `Authentication: ${error.response.data.msg}`;
