@@ -9,6 +9,7 @@ import re
 import sre_constants
 import sre_parse
 import urllib.parse
+from os import getenv
 
 from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
@@ -18,13 +19,7 @@ from flask_pymongo import PyMongo
 app = Flask(__name__)
 
 # Basic configuration
-app.config.update(
-    MONGO_URI='mongodb://{host}:{port}/{database}'.format(
-        host='db',
-        port=27017,
-        database='aliases_db'
-    )
-)
+app.config['MONGO_URI'] = getenv('MONGO_URI', default='mongodb://db:27017/go')
 
 # Initialize database connection
 mongo = PyMongo(app)
@@ -95,9 +90,9 @@ def go_routing(alias):
             format(urllib.parse.quote(alias))
     }
 
-    result = list(mongo.db.aliases_db.find(query))
+    result = list(mongo.db.shortcuts.find(query))
     target = best_target_match(alias, result)
-    if target is not None:
-        return redirect(target)
-    abort(404)
-    return redirect('localhost')  # Consistent return statement
+    if target is None:
+        abort(404)
+        return redirect('localhost')  # Consistent return statement
+    return redirect(target)

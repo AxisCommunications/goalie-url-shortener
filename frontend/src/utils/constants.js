@@ -1,7 +1,7 @@
 let apiUrl;
 if (process.env.NODE_ENV === "production") {
   // Production environment
-  apiUrl = "https://go.company.com/";
+  apiUrl = process.env.WEB_URL;
 } else {
   // Development environment
   apiUrl = "http://localhost:5000/";

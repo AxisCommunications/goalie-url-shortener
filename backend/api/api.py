@@ -9,6 +9,7 @@ http://python-eve.org/authentication.html#token-based-authentication
 """
 
 import datetime
+import os
 import re
 import secrets
 import ssl
@@ -78,20 +79,36 @@ class JWTAuth(TokenAuth):
         self.app = None
         self.server = None
 
+    @staticmethod
+    def generate_secret(key_len=32):
+        """ Generate secret url safe key """
+        return secrets.token_urlsafe(key_len)
+
+    def get_secret(self, secret_file, key_len=32):
+        """Get saved secret from file or generate new and save it"""
+        if os.path.isfile(secret_file):
+            file = open(secret_file, 'r')
+            secret = file.read()
+            file.close()
+        else:
+            secret = self.generate_secret(key_len)
+        return secret
+
     def initiate(self, app):
         """Creates a reference to the app object and initiates the ldap
         connection by setting configuration options and binding lazily"""
         self.app = app
-        self.app.config['JWT_SECRET'] = secrets.token_urlsafe(64)
+
+        self.app.config['JWT_SECRET'] = self.get_secret(
+            '/run/secrets/jwt_secret')
 
         # Set up TLS configuration for ldap connection
         tls = Tls(validate=ssl.CERT_REQUIRED, version=ssl.PROTOCOL_TLSv1,
-                  ca_certs_file='/usr/src/certs/ldapCA.crt')
+                  ca_certs_file='/run/secrets/ldap_ca_crt')
 
         # Configure ldap server settings
         self.server = Server(
-            host=self.app.config['LDAP_SERVER'],
-            port=self.app.config['LDAP_SECURE_PORT'],
+            host=self.app.config['LDAP_URI'],
             use_ssl=True,
             tls=tls,
             get_info=None
@@ -100,7 +117,7 @@ class JWTAuth(TokenAuth):
     def create_token(self, identity, admin=False):
         """ Returns a jwt token from the identity and admin fields. """
         iat = datetime.datetime.utcnow()  # issued at time
-        delta = self.app.config.get('JWT_EXP_DELTA', 10)
+        delta = self.app.config.get('JWT_EXP_DELTA', 20)
         exp = iat + datetime.timedelta(minutes=delta)  # expiration time
 
         payload = {
@@ -162,11 +179,11 @@ class JWTAuth(TokenAuth):
 
         user = '{}@{}'.format(username, self.app.config['LDAP_EMAIL_DOMAIN'])
 
-        ldap_filter = '(&({user_field}={user})({admin_field}={admin_group}))'.\
-            format(user_field=self.app.config['LDAP_USER_FIELD'],
+        ldap_filter = '(&({user_key}={user})({admin_key}={admin_value}))'.\
+            format(user_key=self.app.config['LDAP_USER_KEY'],
                    user=username,
-                   admin_field=self.app.config['LDAP_ADMIN_FIELD'],
-                   admin_group=self.app.config['LDAP_ADMIN_GROUP'])
+                   admin_key=self.app.config['LDAP_ADMIN_KEY'],
+                   admin_value=self.app.config['LDAP_ADMIN_VALUE'])
 
         try:
             with Connection(self.server,

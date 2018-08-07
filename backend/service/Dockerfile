@@ -1,14 +1,18 @@
-
-FROM python:3.6-stretch
+FROM python:3.6-alpine
 
 WORKDIR /usr/src/app
-
-# Create the group and user to be used in this container
-RUN groupadd flaskgroup && useradd -m -g flaskgroup -s /bin/bash flask
-
-# Install required dependencies (includes Flask and uWSGI)
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Install run dependencies
+RUN apk add --no-cache pcre-dev \
+# Install build dependencies
+&& apk add --no-cache --virtual build-dependencies python3-dev build-base linux-headers \
+# Create the group and user to be used in this container
+&& addgroup flaskgroup \
+&& adduser -G flaskgroup -s /bin/ash -S flask \
+# Install required dependencies (includes Flask and uWSGI)
+&& pip install --no-cache-dir -r requirements.txt \
+# Remove build dependencies
+&& apk del build-dependencies
 
 # Expose the port where uWSGI will run
 EXPOSE 5002

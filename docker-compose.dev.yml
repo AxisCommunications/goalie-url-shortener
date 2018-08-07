@@ -4,7 +4,7 @@ services:
   db:
     image: mongo:3.6
     volumes:
-      - ~/mongodb/data:/data/db
+      - ${MONGO_VOLUME_MOUNT}:/data/db
     ports:
       - "27017:27017"
 
@@ -15,14 +15,19 @@ services:
        - http_proxy
        - https_proxy
        - no_proxy
-    depends_on:
-      - db
     ports:
-      - "5000:5000"
+      - "5000:5000" # (host port):(container port)
     volumes:
       - ./backend/api:/usr/src/app
-      - "$LDAP_CA_PATH:/usr/src/certs/ldapCA.crt:ro"
+      - "./.secrets/ldap_ca_crt:/run/secrets/ldap_ca_crt"
     environment:
+      MONGO_URI:
+      LDAP_URI:
+      LDAP_SEARCH_BASE:
+      LDAP_USER_KEY:
+      LDAP_EMAIL_DOMAIN:
+      LDAP_ADMIN_KEY:
+      LDAP_ADMIN_VALUE:
       FLASK_APP: "run.py"
       FLASK_ENV: "development"
       FLASK_DEBUG: 1
@@ -35,14 +40,24 @@ services:
        - http_proxy
        - https_proxy
        - no_proxy
-    depends_on:
-      - db
     ports:
       - "80:5000" # (host port):(container port)
     volumes:
       - ./backend/service:/usr/src/app
     environment:
+      MONGO_URI:
       FLASK_APP: "service.py"
       FLASK_ENV: "development"
       FLASK_DEBUG: 1
     command: ["flask", "run", "--host=0.0.0.0"]  # overrides the uwsgi server
+
+  frontend:
+    image: node:10-alpine
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/usr/src/app
+    working_dir: /usr/src/app
+    command: sh -c "yarn install --non-interactive && yarn start"
+
+

@@ -1,18 +1,18 @@
 """
 Settings file for the API.
 """
+from os import getenv
 
 # LDAP configuration
-LDAP_SERVER = 'ldap.example.com'
-LDAP_SECURE_PORT = 636
-LDAP_SEARCH_BASE = 'dc=example,dc=com'
-LDAP_USER_FIELD = 'sAMAccountName'
-LDAP_EMAIL_DOMAIN = 'example.com'
-LDAP_ADMIN_FIELD = 'memberOf'
-LDAP_ADMIN_GROUP = \
-    'cn=org-example,ou=role,ou=groups,dc=example,dc=com'
+LDAP_URI = getenv('LDAP_URI', default='ldap://ldap.example.com')
+LDAP_SEARCH_BASE = getenv('LDAP_SEARCH_BASE', default='dc=example,dc=com')
+LDAP_USER_KEY = getenv('LDAP_USER_KEY', default='sAMAccountName')
+LDAP_EMAIL_DOMAIN = getenv('LDAP_EMAIL_DOMAIN', default='example.com')
+LDAP_ADMIN_KEY = getenv('LDAP_ADMIN_KEY', default='memberOf')
+LDAP_ADMIN_VALUE = getenv(
+    'LDAP_ADMIN_VALUE', default='cn=admins,dc=example,dc=com')
 
-# JWT authentication settings
+# JWT authentication settings in minutes
 JWT_EXP_DELTA = 20
 
 ############################################################
@@ -20,12 +20,8 @@ JWT_EXP_DELTA = 20
 ############################################################
 
 # Database configuration
-MONGO_URI = 'mongodb://{host}:{port}/{database}'.format(
-    host='db',
-    port=27017,
-    database='aliases_db'
-)
-MONGO_QUERY_BLACKLIST = ['$where']  # Enables the regex feature
+MONGO_URI = getenv('MONGO_URI', default='mongodb://db:27017/go')
+MONGO_QUERY_BLACKLIST = ['$where']  # Removes $regex from blacklist
 
 # Turn off XML and only utilize the JSON renderer
 RENDERERS = ['eve.render.JSONRenderer']
@@ -48,7 +44,6 @@ BULK_ENABLED = False
 
 # Makes development easier can be deleted for increased security
 X_DOMAINS = '*'
-# X_ALLOW_CREDENTIALS = True
 X_HEADERS = ['Authorization', 'Content-Type']
 X_EXPOSE_HEADERS = ['Authorization', 'Content-Type']
 # How long the client should cache the response
@@ -59,11 +54,7 @@ URL_PREFIX = 'api'
 
 # Data validation http://python-eve.org/validation.html
 DOMAIN = {
-    'shortcuts': {
-        'item_title': 'shortcuts',
-        'datasource': {
-            'source': 'aliases_db'
-        },
+    'shortcuts': {  # This name becomes the database collection
         'schema': {
             'pattern': {
                 'type': 'string',

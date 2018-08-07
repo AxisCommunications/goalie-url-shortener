@@ -1,7 +1,7 @@
 node_modules
 build
-.gitignore
-*.md
 .babelrc
 .eslintrc.js
+.gitignore
 .prettierrc.js
+*.md

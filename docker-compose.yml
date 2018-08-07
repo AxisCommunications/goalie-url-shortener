@@ -1,27 +1,13 @@
-version: '3'
+version: '3.1'
 services:
 
   db:
     image: mongo:3.6
-    networks:
-      - db_net
     volumes:
-      - ~/mongodb/data:/data/db
-    restart: unless-stopped
-
-  backup:
-    build:
-      context: ./backend/backup
-      args:
-       - http_proxy
-       - https_proxy
-       - no_proxy
+      - ${MONGO_VOLUME_MOUNT}:/data/db
     networks:
-       - db_net
-    environment:
-      MONGO_HOST: 'db'
-    depends_on:
-      - db
+      - database
+    restart: unless-stopped
 
   api:
     build:
@@ -30,13 +16,20 @@ services:
        - http_proxy
        - https_proxy
        - no_proxy
+    secrets:
+      - ldap_ca_crt
+      - jwt_secret
+    environment:
+      - MONGO_URI
+      - LDAP_URI
+      - LDAP_SEARCH_BASE
+      - LDAP_USER_KEY
+      - LDAP_EMAIL_DOMAIN
+      - LDAP_ADMIN_KEY
+      - LDAP_ADMIN_VALUE
     networks:
-      - db_net
-      - web_net
-    volumes:
-      - "$LDAP_CA_PATH:/usr/src/certs/ldapCA.crt:ro"
-    depends_on:
-      - db
+      - database
+      - backend
     restart: unless-stopped
 
   service:
@@ -46,11 +39,11 @@ services:
        - http_proxy
        - https_proxy
        - no_proxy
+    environment:
+      - MONGO_URI
     networks:
-      - db_net
-      - web_net
-    depends_on:
-      - db
+      - database
+      - backend
     restart: unless-stopped
 
   nginx:
@@ -60,19 +53,35 @@ services:
        - http_proxy
        - https_proxy
        - no_proxy
+    environment:
+      - WEB_URL
     ports:
       - "80:80"
       - "443:443"
-    networks:
-      - web_net
     volumes:
-      - /etc/ssl/certs/company-ssl-certs:/etc/nginx/certs:ro
-      - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - nginx_logs:/var/log/nginx_filebeat/
-    depends_on:
-      - api
-      - service
+
+      - nginx_logs:/var/log/filebeat/
+    secrets:
+      - go_https_crt
+      - go_https_key
+    networks:
+      - backend
     restart: unless-stopped
+
+  backup:
+    build:
+      context: ./backend/backup
+      args:
+       - http_proxy
+       - https_proxy
+       - no_proxy
+    environment:
+      - MONGO_URI
+      - BACKUP_URL
+    secrets:
+      - auth_header
+    networks:
+       - database
 
   filebeat:
     hostname: go-service-production
@@ -80,15 +89,23 @@ services:
       context: ./backend/filebeat
     volumes:
       - nginx_logs:/var/log/nginx/
-    depends_on:
-      - nginx
+    environment:
+      - LOGSTASH_HOSTS
     restart: unless-stopped
 
+secrets:
+  go_https_crt:
+    file: ./.secrets/go_https_crt
+  go_https_key:
+    file: ./.secrets/go_https_key
+  auth_header:
+    file: ./.secrets/auth_header
+  ldap_ca_crt:
+    file: ./.secrets/ldap_ca_crt
+  jwt_secret:
+    file: ./.secrets/jwt_secret
 volumes:
   nginx_logs:
-
 networks:
-  db_net:
-    driver: bridge
-  web_net:
-    driver: bridge
+  database:
+  backend:
