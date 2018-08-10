@@ -9,8 +9,11 @@ COPY public ./public
 COPY src ./src
 RUN yarn build
 
-# Use nginx to host the static files, configuration inserted via docker-compose
+# Use nginx to host the static files
 FROM nginx:1.15-alpine
-# Get built frontend files from the node container
-COPY --from=builder /usr/src/app/build /usr/share/nginx/html
+# Create log folder
+RUN mkdir -p /var/log/filebeat
+# Copy configuration
 COPY nginx.conf /etc/nginx/nginx.conf
+# Get built frontend files from the node container
+COPY --from=builder /usr/src/app/buid /usr/share/nginx/html

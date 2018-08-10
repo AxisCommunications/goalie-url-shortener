@@ -59,7 +59,6 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-
       - nginx_logs:/var/log/filebeat/
     secrets:
       - go_https_crt

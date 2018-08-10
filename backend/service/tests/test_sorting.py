@@ -1,9 +1,11 @@
+""" Unit tests for the service """
 import unittest
 
 from service import best_target_match, sort_regex
 
 
 class TestServiceMethods(unittest.TestCase):
+    """ Tests the service methods. """
 
     def test_sorting_atf_regs(self):
         """
