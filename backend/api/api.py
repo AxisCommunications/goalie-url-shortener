@@ -229,7 +229,7 @@ class JWTAuth(TokenAuth):
                     return True
 
                 item_id = path
-                shortcuts = self.app.data.driver.db['aliases_db']
+                shortcuts = self.app.data.driver.db['shortcuts']
                 shortcut = shortcuts.find_one({'_id': ObjectId(item_id)})
                 ldapuser = shortcut.get('ldapuser')
 
