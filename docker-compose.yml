@@ -58,8 +58,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - nginx_logs:/var/log/filebeat/
     secrets:
       - go_https_crt
       - go_https_key
@@ -67,44 +65,15 @@ services:
       - backend
     restart: unless-stopped
 
-  backup:
-    build:
-      context: ./backend/backup
-      args:
-       - http_proxy
-       - https_proxy
-       - no_proxy
-    environment:
-      - MONGO_URI
-      - BACKUP_URL
-    secrets:
-      - auth_header
-    networks:
-       - database
-
-  filebeat:
-    hostname: go-service-production
-    build:
-      context: ./backend/filebeat
-    volumes:
-      - nginx_logs:/var/log/nginx/
-    environment:
-      - LOGSTASH_HOSTS
-    restart: unless-stopped
-
 secrets:
   go_https_crt:
     file: ./.secrets/go_https_crt
   go_https_key:
     file: ./.secrets/go_https_key
-  auth_header:
-    file: ./.secrets/auth_header
   ldap_ca_crt:
     file: ./.secrets/ldap_ca_crt
   jwt_secret:
     file: ./.secrets/jwt_secret
-volumes:
-  nginx_logs:
 networks:
   database:
   backend:

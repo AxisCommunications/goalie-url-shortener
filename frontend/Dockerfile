@@ -11,8 +11,6 @@ RUN yarn build
 
 # Use nginx to host the static files
 FROM nginx:1.15-alpine
-# Create log folder
-RUN mkdir -p /var/log/filebeat
 # Copy configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 # Get built frontend files from the node container
