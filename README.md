@@ -3,25 +3,37 @@
 This is an implementation of _go/_ links that makes it simple to access
 internal web assets and share them on a coorporate network.
 
+![Demo Animation](../assets/images/demo.gif?raw=true)
+
 Goalie was initially developed by Anton Friberg together with Oscar Svensson
-both part time student employees at Axis Communications. The backend is written
-in Python using a flask framework called Python Eve and utilizes a mongoDB
-database to store the shortcuts. The frontend utilizes React.js and Redux to
-make it easy to edit shortcuts. The entire application is deployed using Docker.
+both part time student employees at [Axis Communications]. The backend is
+written in [Python] using a [Flask] framework called [Eve] and stores the
+shortcuts in a [mongoDB] database. The frontend utilizes [React.js] and [Redux]
+to make it easy to edit shortcuts. The entire application is deployed using
+[Docker].
+
+[python]:(https://github.com/python)
+[flask]:(https://github.com/pallets/flask)
+[eve]:(https://github.com/pyeve/eve)
+[mongodb]:(https://github.com/mongodb/mongo)
+[react.js]:(https://github.com/facebook/react)
+[redux]:(https://github.com/reduxjs/redux)
+[docker]:(https://github.com/docker/docker-ce)
 
 ## Background
 
-This is an implementation of go/ links which is a service that is believed to
-have originated at Google, see [link].
+_go/_ links is a service that is believed to have originated at Google according
+to [this blog post] and [this github repo]. The idea is that people on the
+coorporate network can easily navigate between internal services by directing
+their browser to http://go/service-name. 
 
-The idea is that people on the coorporate network can easily navigate between
-internal services by directing their browser to http://go/service-name. For
-example, if we want to be redirected towards information of our internal git
+For example, if we want to be redirected towards information of our internal git
 repo we visit http://go/git.
 
 These days it is common to see similar services at many large IT companies.
 
-[link]: (http://blog.goatcodes.com/2018/04/18/go-origin)
+[this blog post]: (http://blog.goatcodes.com/2018/04/18/go-origin)
+[this github repo]:(https://github.com/kellegous/go)
 
 ## Notable Features
 
@@ -50,16 +62,16 @@ features. We will provide a brief overview by presenting some examples.
 This allows both `go/git` and `go/gerrit` to direct the user to the internal
 git resource without the need for multiple shortcut entries.
 
-| Pattern | Target                            |
-|:--------|:----------------------------------|
-| `(git   | gerrit)`| https://git.example.com |
+| Pattern       | Target                  |
+|---------------|-------------------------|
+| `(git|gerrit)`| https://git.example.com |
 
 ### Match multiple forms of spelling
 This pattern matches `color-code-search`, `colour-code-search`, `color-code`
 and `colour-code`.
 
 | Pattern                  | Target                    |
-|:-------------------------|:--------------------------|
+|--------------------------|---------------------------|
 | `colou?r-code(-search)?` | https://color.example.com |
 
 ### Capture groups inserted into target
@@ -70,7 +82,7 @@ for `search_string` on the internal git website. The second entry allows
 the id `303492`.
 
 | Pattern            | Target                         |
-|:-------------------|:-------------------------------|
+|--------------------|--------------------------------|
 | `git/(.+)`         | https://git.example.com/q/\1   |
 | `git/(\d+)(/\d+)?` | https://git.example.com/q/\1\2 |
 
@@ -112,9 +124,12 @@ This ranking might not be perfect since `at[a-z]` at number 6 is probably consid
 
 ### Maintainer
 
-- Anton Friberg @AntonFriberg
+- [Anton Friberg]
 
 ### Contributers
 
-- Anton Friberg @AntonFriberg
-- Oscar Svensson @wogscpar
+- [Anton Friberg]
+- [Oscar Svensson]
+
+[Anton Friberg]:(https://github.com/AntonFriberg)
+[Oscar Svensson]:(https://github.com/wogscpar)
