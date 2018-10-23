@@ -62,9 +62,9 @@ features. We will provide a brief overview by presenting some examples.
 This allows both `go/git` and `go/gerrit` to direct the user to the internal
 git resource without the need for multiple shortcut entries.
 
-| Pattern       | Target                  |
-|---------------|-------------------------|
-| `(git|gerrit)`| https://git.example.com |
+| Pattern        | Target                  |
+|----------------|-------------------------|
+| `(git\|gerrit)`| https://git.example.com |
 
 ### Match multiple forms of spelling
 This pattern matches `color-code-search`, `colour-code-search`, `color-code`
@@ -104,19 +104,19 @@ If multiple patterns match the incomming URL string the most specific pattern
 that matches should be returned. Currently this ranking looks like the
 following. Taking the acronym `atf` as an exampel.
 
-| Rank | Target                     |
-|:-----|:---------------------------|
-| 1.   | `atf`                      |
-| 2.   | `(atf)`                    |
-| 3.   | `at\w`                     |
-| 4.   | `at.`                      |
-| 5.   | `at.?`                     |
-| 6.   | `at[a-z]`                  |
-| 7.   | `(a|atf|a-test-framework)` |
-| 8.   | `(atf)(.*)`                |
-| 9.   | `at.+`                     |
-| 10.  | `.+`                       |
-| 11.  | `.*`                       |
+| Rank | Target                       |
+|------|------------------------------|
+| 1.   | `atf`                        |
+| 2.   | `(atf)`                      |
+| 3.   | `at\w`                       |
+| 4.   | `at.`                        |
+| 5.   | `at.?`                       |
+| 6.   | `at[a-z]`                    |
+| 7.   | `(a\|atf\|a-test-framework)` |
+| 8.   | `(atf)(.*)`                  |
+| 9.   | `at.+`                       |
+| 10.  | `.+`                         |
+| 11.  | `.*`                         |
 
 This ranking might not be perfect since `at[a-z]` at number 6 is probably considered more specific than `at.` by many users.
 
