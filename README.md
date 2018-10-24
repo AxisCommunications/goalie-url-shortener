@@ -25,7 +25,7 @@ to make it easy to edit shortcuts. The entire application is deployed using
 _go/_ links is a service that is believed to have originated at Google according
 to [this blog post] and [this github repo]. The idea is that people on the
 coorporate network can easily navigate between internal services by directing
-their browser to http://go/service-name. 
+their browser to http://go/service-name.
 
 For example, if we want to be redirected towards information of our internal git
 repo we visit http://go/git.
@@ -52,6 +52,8 @@ occasions, for example:
 - Making it easier to share scattered web resources with new colleagues.
 - As a searchable index of available internal web resources.
 - As a DNS service for testing environments.
+- Sending vanity urls in-place of complex and hard-to-read URLs will allow the
+  receiver to more quickly grasp what service or resource the URL provides.
 
 ## Advanced Features
 It may not be apparent at first glance but the pattern field for a new shortcut
