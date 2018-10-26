@@ -12,13 +12,14 @@ shortcuts in a [mongoDB] database. The frontend utilizes [React.js] and [Redux]
 to make it easy to edit shortcuts. The entire application is deployed using
 [Docker].
 
-[python]:(https://github.com/python)
-[flask]:(https://github.com/pallets/flask)
-[eve]:(https://github.com/pyeve/eve)
-[mongodb]:(https://github.com/mongodb/mongo)
-[react.js]:(https://github.com/facebook/react)
-[redux]:(https://github.com/reduxjs/redux)
-[docker]:(https://github.com/docker/docker-ce)
+[Axis Communications]: https://www.axis.com
+[python]: https://github.com/python
+[flask]: https://github.com/pallets/flask
+[eve]: https://github.com/pyeve/eve
+[mongodb]: https://github.com/mongodb/mongo
+[react.js]: https://github.com/facebook/react
+[redux]: https://github.com/reduxjs/redux
+[docker]: https://github.com/docker/docker-ce
 
 ## Background
 
@@ -32,8 +33,8 @@ repo we visit http://go/git.
 
 These days it is common to see similar services at many large IT companies.
 
-[this blog post]: (http://blog.goatcodes.com/2018/04/18/go-origin)
-[this github repo]:(https://github.com/kellegous/go)
+[this blog post]: http://blog.goatcodes.com/2018/04/18/go-origin
+[this github repo]: https://github.com/kellegous/go
 
 ## Notable Features
 
@@ -133,5 +134,5 @@ This ranking might not be perfect since `at[a-z]` at number 6 is probably consid
 - [Anton Friberg]
 - [Oscar Svensson]
 
-[Anton Friberg]:(https://github.com/AntonFriberg)
-[Oscar Svensson]:(https://github.com/wogscpar)
+[Anton Friberg]: https://github.com/AntonFriberg
+[Oscar Svensson]: https://github.com/wogscpar
