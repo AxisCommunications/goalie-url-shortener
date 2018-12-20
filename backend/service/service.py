@@ -8,9 +8,9 @@ construct the modified target from the incoming alias.
 import re
 import sre_constants
 import sre_parse
-import urllib.parse
 from os import getenv
 
+import pymongo.errors
 from flask import Flask, abort, redirect
 from flask_pymongo import PyMongo
 
@@ -23,7 +23,6 @@ app.config['MONGO_URI'] = getenv('MONGO_URI', default='mongodb://db:27017/go')
 
 # Initialize database connection
 mongo = PyMongo(app)
-
 
 def sort_regex(shortcut_list):
     """
@@ -81,16 +80,23 @@ def best_target_match(alias, items):
 @app.route('/<path:alias>')
 def go_routing(alias):
     """ Takes alias and redirects user to target found in database. """
-
+    # Prevent database injection
+    alias = alias.replace('"', '')
     # Reverse regex match
     query = {
         '$where':
             # case insensitive and exact match
             '"{}".match(new RegExp("^" + this.pattern + "$", "i"))'.
-            format(urllib.parse.quote(alias))
+            format(alias)
     }
 
-    result = list(mongo.db.shortcuts.find(query))
+    result = []
+    try:
+        result = list(mongo.db.shortcuts.find(query))
+    except pymongo.errors.OperationFailure: # Handle parse errors
+        abort(400)
+        return redirect('localhost')
+
     target = best_target_match(alias, result)
     if target is None:
         abort(404)
