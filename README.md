@@ -121,7 +121,65 @@ following. Taking the acronym `atf` as an exampel.
 | 10.  | `.+`                         |
 | 11.  | `.*`                         |
 
-This ranking might not be perfect since `at[a-z]` at number 6 is probably considered more specific than `at.` by many users.
+This ranking might not be perfect since `at[a-z]` at number 6 is probably
+considered more specific than `at.` by many users.
+
+## Setup
+
+Before initial setup you must create a file called `jwt_secret` in a directory
+called `.secrets` on the root of the project files. This will contain a 32 byte
+long random string that is used for token signing. Keep this file secret.
+
+```
+$ mkdir .secrets
+$ openssl rand -base64 32 > .secrets/jwt_secret
+$ cat .secrets/jwt_secret
+Pnpz+WN1fNBv8jFgQ4vFiXECAb+6aASG6Zv7bGrEdIg=
+```
+
+If you have a need to add your own ca certificate for the LDAP endpoint you can
+do it by placing the ca certificate in a file called `ldap_ca_crt` in the
+`.secrets` folder. Then you may simply uncomment the relevant lines in the
+[docker-compose.yml](docker-compose.yml) file.
+
+In order to login to the service you need to configure your LDAP connection.
+This is done in the [.env](.env) file. Here you can also configure the host
+mount for the database files and other configuration.
+
+With all configuration in place you may simply start the application with docker
+compose.
+
+```
+$ docker-compose up -d --build
+```
+
+### Development environment
+
+During development you may wish to have the application auto-reload changes
+which is possible by starting the application using the development compose
+[file](docker-compose.dev.yml).
+
+```
+$ docker-compose -f docker-compose.dev.yml up --build
+```
+
+### Production hardening
+
+If you wish to deploy the application to production it is recommended to look at
+the [nginx production configuration file](frontend/nginx/nginx.production.conf)
+which enables ssl encryption among other things. The file needs to be configured
+for your own host and domain. Either replace the existing
+[nginx.conf](frontend/nginx/nginx.production.conf) file or change the
+[Dockerfile](frontend/Dockerfile) reference.
+
+You place the key and certificate in files named `go_https_key` and
+`go_https_crt` in the `.secrets` folder. Then you can simply uncomment the
+relevant secrets in the [docker-compose](docker-compose.yml) file.
+
+## Troubleshooting
+
+If you encounter any problems during setup or development please create an
+issue and we will try to answer as soon as possible.
 
 ## Contributers & Maintainers
 

@@ -16,9 +16,6 @@ services:
        - http_proxy
        - https_proxy
        - no_proxy
-    secrets:
-      - ldap_ca_crt
-      - jwt_secret
     environment:
       - MONGO_URI
       - LDAP_URI
@@ -31,6 +28,9 @@ services:
       - database
       - backend
     restart: unless-stopped
+    secrets:
+      - jwt_secret
+#      - ldap_ca_crt
 
   service:
     build:
@@ -58,22 +58,22 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    secrets:
-      - go_https_crt
-      - go_https_key
     networks:
       - backend
     restart: unless-stopped
+#    secrets:
+#      - go_https_crt
+#      - go_https_key
 
 secrets:
-  go_https_crt:
-    file: ./.secrets/go_https_crt
-  go_https_key:
-    file: ./.secrets/go_https_key
-  ldap_ca_crt:
-    file: ./.secrets/ldap_ca_crt
   jwt_secret:
     file: ./.secrets/jwt_secret
+#  ldap_ca_crt:
+#    file: ./.secrets/ldap_ca_crt
+#  go_https_crt:
+#    file: ./.secrets/go_https_crt
+#  go_https_key:
+#    file: ./.secrets/go_https_key
 networks:
   database:
   backend:
