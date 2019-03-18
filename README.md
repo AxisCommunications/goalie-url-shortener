@@ -206,6 +206,34 @@ which is possible by starting the application using the development compose
 $ docker-compose -f docker-compose.dev.yml up --build
 ```
 
+### Python development
+
+Recommended Python development environment is to utilize a virtual python
+environment seperate from the system (i.e. pyenv,virtualenv, etc.) with linting
+provided by pylint and automatic code formatting by utilizing black.
+
+| Name          | Version       |
+| ------------- |:-------------:|
+| [Python]      | `3.6`         |
+| [PyLint]      | `2.3.1`       |
+| [Black]       | `19.3`        |
+
+[Python]: https://docs.python.org/3.6/
+[pylint]: https://www.pylint.org/
+[black]: https://github.com/ambv/black
+
+### Javascript Development
+
+Recommended Javascript development is to have linting provided with ESLint (with
+react, airbnb and prettier plugins) and formatting by Prettier. The recommended
+package manager is Yarn.
+
+| Name          | Version       |
+| ------------- |:-------------:|
+| [Yarn]        | `1.15`        |
+| [ESLint]      | `4.19`        |
+| [Prettier]    | `1.13`        |
+
 Production hardening
 --------------------
 
