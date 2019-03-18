@@ -1,9 +1,10 @@
 """
-Run configuration for the GO service.
+Run configuration for the go/ api.
 """
 from eve import Eve
 
-from api import JWTAuth, PatternValidator
+from auth import JWTAuth
+from validator import PatternValidator
 
 app = Eve(template_folder='/root',  # pylint: disable=invalid-name
           auth=JWTAuth(),

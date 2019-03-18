@@ -19,7 +19,7 @@ RUN apk add --update pcre-dev \
 EXPOSE 5001
 
 # Copy application source to container image
-COPY run.py api.py settings.py ./
+COPY run.py auth.py validator.py settings.py ./
 
 # Change owner of application files
 RUN chown -R flask:flaskgroup /usr/src/app
