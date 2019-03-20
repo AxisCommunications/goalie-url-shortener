@@ -29,27 +29,10 @@ class JWTAuth(TokenAuth):
         self.app = None
         self.server = None
 
-    @staticmethod
-    def generate_secret(key_len=32):
-        """ Generate secret url safe key """
-        return secrets.token_urlsafe(key_len)
-
-    def get_secret(self, secret_file, key_len=32):
-        """Get saved secret from file or generate new and save it"""
-        if os.path.isfile(secret_file):
-            file = open(secret_file, "r")
-            secret = file.read()
-            file.close()
-        else:
-            secret = self.generate_secret(key_len)
-        return secret
-
     def initiate(self, app):
         """Creates a reference to the app object and initiates the ldap
         connection by setting configuration options and binding lazily"""
         self.app = app
-
-        self.app.config["JWT_SECRET"] = self.get_secret("/run/secrets/jwt_secret")
 
         # Set up TLS configuration for ldap connection
         tls = Tls(
