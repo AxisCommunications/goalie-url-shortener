@@ -28,6 +28,10 @@ LDAP_USER_KEY = getenv("LDAP_USER_KEY", default="sAMAccountName")
 LDAP_EMAIL_DOMAIN = getenv("LDAP_EMAIL_DOMAIN", default="example.com")
 LDAP_ADMIN_KEY = getenv("LDAP_ADMIN_KEY", default="memberOf")
 LDAP_ADMIN_VALUE = getenv("LDAP_ADMIN_VALUE", default="cn=admins,dc=example,dc=com")
+LDAP_CA_CRT_PATH = getenv("LDAP_CA_CRT_PATH", default="/run/secrets/ldap_ca_crt")
+LDAP_CRT_VALIDATION = getenv(
+    "LDAP_CRT_VALIDATE", default="required"
+)  # required, optional or none
 
 ############################################################
 # Python Eve configuration http://python-eve.org/config.html

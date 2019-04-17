@@ -18,7 +18,8 @@
     "react-typist": "^2.0.4",
     "redux": "^4.0.0",
     "redux-thunk": "^2.2.0",
-    "safe-regex": "^1.1.0"
+    "safe-regex": "^1.1.0",
+    "url-parameters": "^1.6.0"
   },
   "scripts": {
     "start": "react-scripts start",

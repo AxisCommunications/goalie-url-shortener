@@ -99,6 +99,5 @@ def go_routing(alias):
 
     target = best_target_match(alias, result)
     if target is None:
-        abort(404)
-        return redirect('localhost')  # Consistent return statement
+        return redirect("/#?search={}".format(alias))  # Consistent return statement
     return redirect(target)

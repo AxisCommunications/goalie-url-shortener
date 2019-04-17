@@ -1,4 +1,5 @@
 import update from "immutability-helper";
+import url from "url-parameters";
 import { combineReducers } from "redux";
 import { types } from "../utils/constants";
 import { validLogin } from "./actions/authentication";
@@ -7,7 +8,7 @@ import { validLogin } from "./actions/authentication";
 const initialShortcuts = {
   items: [],
   loading: false,
-  filter: "",
+  filter: url.get("search", ""),
   sort: "pattern",
   pages: 1,
   page: 1
@@ -106,10 +107,16 @@ function shortcuts(state = initialShortcuts, action) {
     }
 
     case types.SET_FILTER:
+      if (action.filter) {
+        url.set("search", action.filter);
+      } else {
+        url.clear();
+      }
       return update(state, {
         filter: { $set: action.filter }
       });
     case types.RESET_FILTER:
+      url.clear();
       return update(state, {
         filter: { $set: "" }
       });
