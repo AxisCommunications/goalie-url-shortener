@@ -8,7 +8,7 @@ class SearchBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: ""
+      value: props.search
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -62,11 +62,13 @@ class SearchBar extends Component {
 
 SearchBar.propTypes = {
   filter: PropTypes.func.isRequired,
-  view: PropTypes.string.isRequired
+  view: PropTypes.string.isRequired,
+  search: PropTypes.string.isRequired
 };
 
 const mapStateToProps = state => ({
-  view: state.gui.view
+  view: state.gui.view,
+  search: state.shortcuts.filter
 });
 
 const mapDispatchToProps = dispatch => ({
