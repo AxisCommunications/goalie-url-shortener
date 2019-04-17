@@ -7,6 +7,7 @@ http://python-eve.org/authentication.html#token-based-authentication
 
 import datetime
 import ssl
+import os
 
 import jwt
 from bson.errors import BSONError
@@ -27,6 +28,18 @@ class JWTAuth(TokenAuth):
         self.app = None
         self.server = None
 
+    def _ldap_ca_crt_path(self):
+        path = self.app.config.get("LDAP_CA_CRT_PATH", "/run/secrets/ldap_ca_crt")
+        return path if os.path.isfile(path) else None
+
+    def _ldap_crt_validation(self):
+        validation = self.app.config.get("LDAP_CRT_VALIDATION", "required")
+        if validation == "optional":
+            return ssl.CERT_OPTIONAL
+        elif validation == "none":
+            return ssl.CERT_NONE
+        return ssl.CERT_REQUIRED
+
     def initiate(self, app):
         """Creates a reference to the app object and initiates the ldap
         connection by setting configuration options and binding lazily"""
@@ -34,9 +47,7 @@ class JWTAuth(TokenAuth):
 
         # Set up TLS configuration for ldap connection
         tls = Tls(
-            validate=ssl.CERT_REQUIRED,
-            version=ssl.PROTOCOL_TLSv1,
-            ca_certs_file="/run/secrets/ldap_ca_crt",
+            validate=self._ldap_crt_validation(), ca_certs_file=self._ldap_ca_crt_path()
         )
 
         # Configure ldap server settings
