@@ -6,8 +6,6 @@ http://python-eve.org/authentication.html#token-based-authentication
 """
 
 import datetime
-import os
-import secrets
 import ssl
 
 import jwt
