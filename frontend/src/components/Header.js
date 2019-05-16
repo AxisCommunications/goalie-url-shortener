@@ -11,7 +11,6 @@ const Header = () => {
           <Typist
             avgTypingDelay={100}
             cursor={{ show: false }}
-            onTypingDone={this.onHeaderTyped}
           >
             <h1>
               <a href="/">
