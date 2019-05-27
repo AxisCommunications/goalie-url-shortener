@@ -234,6 +234,10 @@ package manager is Yarn.
 | [ESLint]      | `4.19`        |
 | [Prettier]    | `1.13`        |
 
+[Yarn]: https://yarnpkg.com/
+[ESLint]: https://eslint.org/
+[Prettier]: https://prettier.io/
+
 Production hardening
 --------------------
 
