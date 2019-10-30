@@ -2,7 +2,7 @@ version: '3.1'
 services:
 
   db:
-    image: mongo:3.6
+    image: mongo:4.2.1
     volumes:
       - ${MONGO_VOLUME_MOUNT}:/data/db
     networks:
