@@ -1,4 +1,4 @@
-Goalie - A go short-link service implementation
+Goalie - A _go/_ Short-Link Service Implementation
 ===============================================
 
 This is an implementation of _go/_ links which makes it simple to access
@@ -22,27 +22,27 @@ to make it easy to edit shortcuts. The entire application is deployed using
 [redux]: https://github.com/reduxjs/redux
 [docker]: https://github.com/docker/docker-ce
 
-Table of contents
+Table of Contents
 =================
 
    * [Goalie](#goalie---a-go-short-link-service-implementation)
-   * [Table of contents](#table-of-contents)
+   * [Table of Contents](#table-of-contents)
    * [Background](#background)
-   * [Notable features](#notable-features)
-   * [Advanced features](#advanced-features)
-      * [Single target for multiple patterns](#single-target-for-multiple-patterns)
-      * [Match multiple forms of spelling](#match-multiple-forms-of-spelling)
-      * [Capture groups inserted into target](#capture-groups-inserted-into-target)
+   * [Notable Features](#notable-features)
+   * [Advanced Features](#advanced-features)
+      * [Single Target for Multiple Patterns](#single-target-for-multiple-patterns)
+      * [Match Multiple Forms of Spelling](#match-multiple-forms-of-spelling)
+      * [Capture Groups Inserted Into Target](#capture-groups-inserted-into-target)
       * [Wildcards](#wildcards)
       * [Ranking](#ranking)
    * [Setup](#setup)
-      * [Initial setup](#initial-setup)
-      * [Development environment](#development-environment)
-      * [Production hardening](#production-hardening)
+      * [Initial Setup](#initial-setup)
+      * [Development Environment](#development-environment)
+      * [Production Hardening](#production-hardening)
    * [Troubleshooting](#troubleshooting)
-   * [Contributers & Maintainers](#contributers--maintainers)
+   * [Contributors & Maintainers](#contributors--maintainers)
       * [Maintainers](#maintainers)
-      * [Contributers](#contributers)
+      * [Contributors](#contributors)
 
 
 Background
@@ -61,7 +61,7 @@ These days it is common to see similar services at many large IT companies.
 [this blog post]: http://blog.goatcodes.com/2018/04/18/go-origin
 [this GitHub repository]: https://github.com/kellegous/go
 
-Notable features
+Notable Features
 ================
 
 - Easily create and modify shortcuts for web URLs.
@@ -89,7 +89,7 @@ It may not be apparent at first glance, but the pattern field for a new shortcut
 actually accepts a regex value. This provides the service with many additional
 features. We will provide a brief overview by presenting some examples.
 
-Single target for multiple patterns
+Single Target for Multiple Patterns
 -----------------------------------
 
 This allows both `go/git` and `go/gerrit` to direct the user to the internal
@@ -99,7 +99,7 @@ git resource without the need for multiple shortcut entries.
 |----------------|-------------------------|
 | `(git\|gerrit)`| https://git.example.com |
 
-Match multiple forms of spelling
+Match Multiple Forms of Spelling
 --------------------------------
 
 This pattern matches `color-code-search`, `colour-code-search`, `color-code`
@@ -109,7 +109,7 @@ and `colour-code`.
 |--------------------------|---------------------------|
 | `colou?r-code(-search)?` | https://color.example.com |
 
-Capture groups inserted into target
+Capture Groups Inserted Into Target
 -----------------------------------
 
 This example in particular is very interesting. The first entry allow users to
@@ -165,7 +165,7 @@ considered more specific than `at.` by many users.
 Setup
 =====
 
-Initial setup
+Initial Setup
 -------------
 
 Before initial setup you must create a file called `jwt_secret` in a directory
@@ -195,7 +195,7 @@ With all configurations in place you may simply start the application with
 $ docker-compose up -d --build
 ```
 
-Development environment
+Development Environment
 -----------------------
 
 During development you may wish to have the application auto-reload changes,
@@ -206,7 +206,7 @@ which is possible by starting the application using the development compose
 $ docker-compose -f docker-compose.dev.yml up --build
 ```
 
-### Python development
+### Python Development
 
 Recommended Python development environment is to utilize a virtual Python
 environment separate from the system (i.e. pyenv, virtualenv, etc.) with linting
@@ -238,7 +238,7 @@ package manager is Yarn.
 [ESLint]: https://eslint.org/
 [Prettier]: https://prettier.io/
 
-Production hardening
+Production Hardening
 --------------------
 
 If you wish to deploy the application to production it is recommended to look at
@@ -258,7 +258,7 @@ Troubleshooting
 If you encounter any problems during setup or development please create an
 issue and we will try to answer as soon as possible.
 
-Contributers & Maintainers
+Contributors & Maintainers
 ==========================
 
 Maintainers
@@ -266,7 +266,7 @@ Maintainers
 
 - [Anton Friberg]
 
-Contributers
+Contributors
 ------------
 
 - [Anton Friberg]
