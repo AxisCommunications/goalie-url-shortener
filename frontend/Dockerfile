@@ -1,5 +1,5 @@
 # Use node image to build static files
-FROM node:12-alpine as builder
+FROM node:13-alpine as builder
 WORKDIR /usr/src/app
 # Install dependencies
 COPY package.json yarn.lock ./
@@ -10,7 +10,7 @@ COPY src ./src
 RUN yarn build
 
 # Use nginx to host the static files
-FROM nginx:1.15-alpine
+FROM nginx:1.17-alpine
 # Copy configuration
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 # Get built frontend files from the node container

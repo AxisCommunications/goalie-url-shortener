@@ -52,7 +52,7 @@ services:
     command: ["flask", "run", "--host=0.0.0.0"]  # overrides the uwsgi server
 
   frontend:
-    image: node:10-alpine
+    image: node:13-alpine
     ports:
       - "3000:3000"
     volumes:
