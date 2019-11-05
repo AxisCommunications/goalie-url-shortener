@@ -68,12 +68,15 @@ def best_target_match(alias, items):
         match = re.match(item['pattern']+"$", alias, re.I)
         if match:
             # Only substitute matching part of alias
-            target = re.sub(
-                "^" + item['pattern'] + "$",  # make sure entire pattern
-                item['target'],
-                match.group(0),  # only matching part not entire alias
-                flags=re.I  # case insensitive
-            )
+            try:
+                target = re.sub(
+                    "^" + item['pattern'] + "$",  # make sure entire pattern
+                    item['target'],
+                    match.group(0),  # only matching part not entire alias
+                    flags=re.I  # case insensitive
+                )
+            except sre_constants.error:
+                target = item['target']
             return target
 
 
