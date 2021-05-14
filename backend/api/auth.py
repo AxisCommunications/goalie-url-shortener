@@ -113,7 +113,10 @@ class JWTAuth(TokenAuth):
         if not password:
             return jsonify({"msg": "Missing password parameter"}), 400
 
-        user = "{}@{}".format(username, self.app.config["LDAP_EMAIL_DOMAIN"])
+        if len(self.app.config["LDAP_EMAIL_DOMAIN"]) > 0:
+            user = "{}@{}".format(username, self.app.config["LDAP_EMAIL_DOMAIN"])
+        else:
+            user = username
 
         ldap_filter = "(&({user_key}={user})({admin_key}={admin_value}))".format(
             user_key=self.app.config["LDAP_USER_KEY"],
