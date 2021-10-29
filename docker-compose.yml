@@ -1,6 +1,5 @@
-version: '3.1'
+version: "3"
 services:
-
   db:
     image: mongo:4.2.1
     volumes:
@@ -13,9 +12,9 @@ services:
     build:
       context: ./backend/api
       args:
-       - http_proxy
-       - https_proxy
-       - no_proxy
+        - http_proxy
+        - https_proxy
+        - no_proxy
     environment:
       - MONGO_URI
       - LDAP_URI
@@ -30,15 +29,15 @@ services:
     restart: unless-stopped
     secrets:
       - jwt_secret
-#      - ldap_ca_crt
+  #      - ldap_ca_crt
 
   service:
     build:
       context: ./backend/service
       args:
-       - http_proxy
-       - https_proxy
-       - no_proxy
+        - http_proxy
+        - https_proxy
+        - no_proxy
     environment:
       - MONGO_URI
     networks:
@@ -50,9 +49,9 @@ services:
     build:
       context: ./frontend
       args:
-       - http_proxy
-       - https_proxy
-       - no_proxy
+        - http_proxy
+        - https_proxy
+        - no_proxy
     environment:
       - WEB_URL
     ports:
@@ -61,9 +60,9 @@ services:
     networks:
       - backend
     restart: unless-stopped
-#    secrets:
-#      - go_https_crt
-#      - go_https_key
+  #  secrets:
+  #    - go_https_crt
+  #    - go_https_key
 
 secrets:
   jwt_secret:
