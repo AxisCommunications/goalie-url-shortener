@@ -10,7 +10,7 @@ COPY src ./src
 RUN yarn build
 
 # Use nginx to host the static files
-FROM nginx:1.17-alpine
+FROM nginx:1.21-alpine
 # Copy configuration
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 # Get built frontend files from the node container
