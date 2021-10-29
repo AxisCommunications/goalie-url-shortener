@@ -44,7 +44,11 @@ class AddShortcut extends Component {
         case "pattern":
           try {
             RegExp(value);
-            if (value.length > 0) {
+            if (
+              value.length > 0 &&
+              value.toLowerCase() !== "api" &&
+              !value.toLowerCase().startsWith("api/")
+            ) {
               this.setState({ patternValid: "valid" });
             } else {
               this.setState({ patternValid: "not-valid" });
