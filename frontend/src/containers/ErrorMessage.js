@@ -43,9 +43,7 @@ class ErrorMessage extends Component {
           return "Server responded with unknown 404 error.";
         }
         default:
-          return `Server responded with unknown error. Status: ${
-            error.response.status
-          }`;
+          return `Server responded with unknown error. Status: ${error.response.status}`;
       }
     } else if (error.request) {
       // The request was made but no response was received
@@ -81,7 +79,14 @@ ErrorMessage.propTypes = {
     request: PropTypes.instanceOf(XMLHttpRequest),
     response: PropTypes.shape({
       data: PropTypes.shape({
-        msg: PropTypes.string
+        msg: PropTypes.string,
+        _error: PropTypes.shape({
+          message: PropTypes.string
+        }),
+        _issues: PropTypes.shape({
+          pattern: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
+          target: PropTypes.oneOfType([PropTypes.string])
+        })
       }),
       status: PropTypes.number,
       statusText: PropTypes.string,

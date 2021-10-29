@@ -8,10 +8,7 @@ const Header = () => {
     <header className="main-header">
       <div className="row">
         <div className="text-center">
-          <Typist
-            avgTypingDelay={100}
-            cursor={{ show: false }}
-          >
+          <Typist avgTypingDelay={100} cursor={{ show: false }}>
             <h1>
               <a href="/">
                 <b>go/</b>

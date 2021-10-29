@@ -1,9 +1,8 @@
 import update from "immutability-helper";
 import { combineReducers } from "redux";
+import queryString from "query-string";
 import { types } from "../utils/constants";
 import { validLogin } from "./actions/authentication";
-import queryString from "query-string";
-
 // The state before any shortcuts are loaded
 const initialShortcuts = {
   items: [],
@@ -110,7 +109,7 @@ function shortcuts(state = initialShortcuts, action) {
 
     case types.SET_FILTER:
       if (action.filter) {
-        window.location.hash = queryString.stringify({search: action.filter});
+        window.location.hash = queryString.stringify({ search: action.filter });
       } else {
         window.location.hash = "";
       }
