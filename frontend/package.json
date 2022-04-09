@@ -7,7 +7,7 @@
     "immutability-helper": "^3.0.1",
     "jwt-decode": "^2.2.0",
     "lodash.debounce": "^4.0.8",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "package.json": "^2.0.1",
     "prop-types": "^15.7.2",
     "query-string": "^6.8.3",
