@@ -1,5 +1,5 @@
 # Use node image to build static files
-FROM node:13-alpine as builder
+FROM node:14-alpine as builder
 WORKDIR /usr/src/app
 # Install dependencies
 COPY package.json yarn.lock ./
