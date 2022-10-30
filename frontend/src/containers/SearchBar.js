@@ -8,7 +8,7 @@ class SearchBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: props.search
+      value: props.search,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -18,41 +18,48 @@ class SearchBar extends Component {
     this.updateSearch = debounce(this.updateSearch, 200);
   }
 
+  componentDidUpdate(prevProps) {
+    const { view } = this.props;
+    if (view !== prevProps.view) {
+      this.setState({ value: "" });
+    }
+  }
+
+  handleSubmit(event) {
+    const { filter } = this.props;
+    const { value } = this.state;
+    event.preventDefault();
+    filter(value);
+  }
+
   handleChange(event) {
     this.setState({ value: event.target.value });
     this.updateSearch(); // Debounced
   }
 
   updateSearch() {
-    let search = this.state.value;
+    const { filter } = this.props;
+    const { value } = this.state;
+    let search = value;
     try {
-      RegExp(this.state.value);
+      RegExp(value);
     } catch (error) {
-      search = encodeURI(this.state.value);
+      search = encodeURI(value);
     }
-    this.props.filter(search);
-  }
-
-  handleSubmit(event) {
-    event.preventDefault();
-    this.props.filter(this.state.value);
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.view !== prevProps.view) {
-      this.setState({ value: "" });
-    }
+    filter(search);
   }
 
   render() {
+    const { value } = this.state;
     return (
       <form onSubmit={this.handleSubmit}>
         <input
           className="eight columns offset-by-two"
           type="text"
           placeholder="Search"
-          value={this.state.value}
+          value={value}
           onChange={this.handleChange}
+          // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
         />
       </form>
@@ -63,19 +70,16 @@ class SearchBar extends Component {
 SearchBar.propTypes = {
   filter: PropTypes.func.isRequired,
   view: PropTypes.string.isRequired,
-  search: PropTypes.string.isRequired
+  search: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   view: state.gui.view,
-  search: state.shortcuts.filter
+  search: state.shortcuts.filter,
 });
 
-const mapDispatchToProps = dispatch => ({
-  filter: input => dispatch(filterResult(input))
+const mapDispatchToProps = (dispatch) => ({
+  filter: (input) => dispatch(filterResult(input)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(SearchBar);
+export default connect(mapStateToProps, mapDispatchToProps)(SearchBar);

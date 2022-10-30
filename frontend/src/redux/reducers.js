@@ -1,8 +1,9 @@
+/* eslint-disable default-param-last */
 import update from "immutability-helper";
 import { combineReducers } from "redux";
+import queryString from "query-string";
 import { types } from "../utils/constants";
 import { validLogin } from "./actions/authentication";
-import queryString from "query-string";
 
 // The state before any shortcuts are loaded
 const initialShortcuts = {
@@ -13,7 +14,7 @@ const initialShortcuts = {
     : "",
   sort: "pattern",
   pages: 1,
-  page: 1
+  page: 1,
 };
 
 // The initial authentication state is loaded from localstorage if available
@@ -23,13 +24,13 @@ const initialAuthentication = {
   admin: localStorage.getItem("admin") === "true",
   username: localStorage.getItem("username")
     ? localStorage.getItem("username")
-    : ""
+    : "",
 };
 
 // The initial gui state presented to the user
 const initialGUI = {
   view: "all",
-  add_visible: false
+  add_visible: false,
 };
 
 // Reducer for interface state
@@ -37,11 +38,11 @@ function gui(state = initialGUI, action) {
   switch (action.type) {
     case types.ADD_SHORTCUT_TOGGLE:
       return update(state, {
-        add_visible: { $set: !state.add_visible }
+        add_visible: { $set: !state.add_visible },
       });
     case types.CHANGE_VIEW:
       return update(state, {
-        view: { $set: action.view }
+        view: { $set: action.view },
       });
     case types.RESET_GUI:
       return initialGUI;
@@ -69,63 +70,63 @@ function shortcuts(state = initialShortcuts, action) {
   switch (action.type) {
     case types.SHORTCUTS_REQUEST:
       return update(state, {
-        loading: { $set: true }
+        loading: { $set: true },
       });
     case types.SHORTCUTS_SUCCESS:
       return update(state, {
         items: { $set: action.items },
         loading: { $set: false },
         pages: { $set: action.pages },
-        page: { $set: action.page }
+        page: { $set: action.page },
       });
     case types.SHORTCUTS_FAILURE:
       return update(state, {
         pages: { $set: 1 },
         page: { $set: 1 },
-        loading: { $set: false }
+        loading: { $set: false },
       });
     case types.SHORTCUTS_RESET:
       return initialShortcuts;
 
     case types.ADD_SHORTCUT:
       return update(state, {
-        items: { $push: [action.shortcut] }
+        items: { $push: [action.shortcut] },
       });
 
     case types.DELETE_SHORTCUT: {
-      const index = state.items.findIndex(item => item._id === action.id);
+      const index = state.items.findIndex((item) => item._id === action.id);
       return update(state, {
-        items: { $splice: [[index, 1]] }
+        items: { $splice: [[index, 1]] },
       });
     }
 
     case types.UPDATE_SHORTCUT: {
       const index = state.items.findIndex(
-        item => item._id === action.shortcut._id
+        (item) => item._id === action.shortcut._id
       );
       return update(state, {
-        items: { $splice: [[index, 1, action.shortcut]] }
+        items: { $splice: [[index, 1, action.shortcut]] },
       });
     }
 
     case types.SET_FILTER:
       if (action.filter) {
-        window.location.hash = queryString.stringify({search: action.filter});
+        window.location.hash = queryString.stringify({ search: action.filter });
       } else {
         window.location.hash = "";
       }
       return update(state, {
-        filter: { $set: action.filter }
+        filter: { $set: action.filter },
       });
     case types.RESET_FILTER:
       window.location.hash = "";
       return update(state, {
-        filter: { $set: "" }
+        filter: { $set: "" },
       });
 
     case types.SET_SORT:
       return update(state, {
-        sort: { $set: action.sort }
+        sort: { $set: action.sort },
       });
 
     default:
@@ -140,7 +141,7 @@ function authentication(state = initialAuthentication, action) {
         ...state,
         loading: true,
         authenticated: false,
-        username: action.credentials.username
+        username: action.credentials.username,
       };
     case types.LOGIN_SUCCESS:
       return {
@@ -148,14 +149,14 @@ function authentication(state = initialAuthentication, action) {
         loading: false,
         authenticated: true,
         username: action.username,
-        admin: action.admin
+        admin: action.admin,
       };
     case types.LOGOUT:
       return {
         loading: false,
         authenticated: false,
         username: "",
-        admin: false
+        admin: false,
       };
 
     default:
@@ -168,7 +169,7 @@ const rootReducer = combineReducers({
   shortcuts,
   authentication,
   error,
-  gui
+  gui,
 });
 
 export default rootReducer;

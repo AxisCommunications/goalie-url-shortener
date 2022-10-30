@@ -6,7 +6,7 @@ import setErrorWithTimeout from "./error";
 
 export function validLogin() {
   const requiredKeys = ["token", "username", "admin", "exp"];
-  const containsAll = requiredKeys.every(x => x in localStorage);
+  const containsAll = requiredKeys.every((x) => x in localStorage);
   const now = new Date();
   const expires = new Date(localStorage.getItem("exp"));
 
@@ -14,10 +14,10 @@ export function validLogin() {
 }
 
 export function loginUser(credentials) {
-  return dispatch => {
+  return (dispatch) => {
     dispatch({ type: types.LOGIN_REQUEST, credentials });
     return api.post("/api/login", credentials).then(
-      response => {
+      (response) => {
         const { token } = response.data;
         const { identity, admin, exp, iat } = jwtDecode(token);
 
@@ -30,10 +30,10 @@ export function loginUser(credentials) {
         return dispatch({
           type: types.LOGIN_SUCCESS,
           username: identity,
-          admin
+          admin,
         });
       },
-      error => {
+      (error) => {
         dispatch({ type: types.LOGOUT });
         return dispatch(setErrorWithTimeout(error));
       }
@@ -42,18 +42,18 @@ export function loginUser(credentials) {
 }
 
 export function logoutUser() {
-  return dispatch => {
+  return (dispatch) => {
     localStorage.clear();
     return Promise.all([
       dispatch({ type: types.SHORTCUTS_RESET }),
       dispatch({ type: types.RESET_GUI }),
-      dispatch({ type: types.LOGOUT })
+      dispatch({ type: types.LOGOUT }),
     ]).then(() => dispatch(getShortcuts()));
   };
 }
 
 export function refreshSession() {
-  return dispatch => {
+  return (dispatch) => {
     // Do not refresh if more than 3 minutes left
     const expires = new Date(localStorage.getItem("exp"));
     const differenceInMs = expires - new Date();
@@ -65,11 +65,11 @@ export function refreshSession() {
     return api
       .post("/api/refresh", { token: localStorage.getItem("token") })
       .then(
-        response => {
+        (response) => {
           localStorage.setItem("token", response.data.token);
           return Promise.resolve();
         },
-        error => {
+        (error) => {
           dispatch({ type: types.SET_ERROR, error });
           return dispatch({ type: types.LOGOUT });
         }
@@ -78,7 +78,7 @@ export function refreshSession() {
 }
 
 export function activeSessionCheck() {
-  return dispatch => {
+  return (dispatch) => {
     if (!validLogin()) {
       return dispatch(logoutUser());
     }
