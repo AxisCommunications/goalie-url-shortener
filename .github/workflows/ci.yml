@@ -3,26 +3,13 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  run-linters:
-    name: Run linters
+  lint-frontend:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v3
-        with:
-          # Full git history is needed to get a proper
-          # list of changed files within `super-linter`
-          fetch-depth: 0
-
-      - name: Lint everything
-        uses: github/super-linter/slim@v4
-        env:
-          VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: master
-          LINTER_RULES_PATH: /
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc.js
-          JAVASCRIPT_DEFAULT_STYLE: prettier
-          VALIDATE_JAVASCRIPT_ES: true
-          PYTHON_PYLINT_CONFIG_FILE: .pylintrc
-          VALIDATE_PYTHON: true
+      - uses: actions/checkout@v3
+      - name: Install modules
+        run: yarn
+        working-directory: frontend
+      - name: Run ESLint
+        run: yarn run eslint . --ext .js,.jsx
+        working-directory: frontend
