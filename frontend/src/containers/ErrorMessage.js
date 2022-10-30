@@ -1,3 +1,5 @@
+/* eslint-disable react/forbid-prop-types */
+/* eslint-disable react/prop-types */
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
@@ -43,9 +45,7 @@ class ErrorMessage extends Component {
           return "Server responded with unknown 404 error.";
         }
         default:
-          return `Server responded with unknown error. Status: ${
-            error.response.status
-          }`;
+          return `Server responded with unknown error. Status: ${error.response.status}`;
       }
     } else if (error.request) {
       // The request was made but no response was received
@@ -61,7 +61,8 @@ class ErrorMessage extends Component {
   }
 
   render() {
-    if (this.props.error) {
+    const { error } = this.props;
+    if (error) {
       return (
         <div className="row eight columns offset-by-two">
           <div className="error-message">
@@ -81,18 +82,18 @@ ErrorMessage.propTypes = {
     request: PropTypes.instanceOf(XMLHttpRequest),
     response: PropTypes.shape({
       data: PropTypes.shape({
-        msg: PropTypes.string
+        msg: PropTypes.string,
       }),
       status: PropTypes.number,
       statusText: PropTypes.string,
       headers: PropTypes.object,
-      config: PropTypes.object
-    })
-  })
+      config: PropTypes.object,
+    }),
+  }),
 };
 
-const mapStateToProps = state => ({
-  error: state.error
+const mapStateToProps = (state) => ({
+  error: state.error,
 });
 
 export default connect(mapStateToProps)(ErrorMessage);

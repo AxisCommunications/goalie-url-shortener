@@ -27,7 +27,7 @@ export const types = {
   CLEAR_ERROR: "CLEAR_ERROR",
   CHANGE_VIEW: "CHANGE_VIEW",
   ADD_SHORTCUT_TOGGLE: "ADD_SHORTCUT_TOGGLE",
-  RESET_GUI: "RESET_GUI"
+  RESET_GUI: "RESET_GUI",
 };
 
 // https://gist.github.com/dperini/729294 by user dperini on github

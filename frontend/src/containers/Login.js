@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import {
   loginUser,
   logoutUser,
-  activeSessionCheck
+  activeSessionCheck,
 } from "../redux/actions/authentication";
 
 import InputField from "../components/InputField";
@@ -15,8 +15,8 @@ class Login extends Component {
     this.state = {
       credentials: {
         username: "",
-        password: ""
-      }
+        password: "",
+      },
     };
 
     this.onChange = this.onChange.bind(this);
@@ -25,7 +25,8 @@ class Login extends Component {
   }
 
   componentDidMount() {
-    this.props.logoutOnInvalidSession();
+    const { logoutOnInvalidSession } = this.props;
+    logoutOnInvalidSession();
   }
 
   onChange(event) {
@@ -36,26 +37,34 @@ class Login extends Component {
   }
 
   onLogin(event) {
+    const {
+      credentials: { username, password },
+      credentials,
+    } = this.state;
+    const { login } = this.props;
     event.preventDefault();
-    if (this.state.credentials.username && this.state.credentials.password) {
-      this.props.login(this.state.credentials);
+    if (username && password) {
+      login(credentials);
     }
   }
 
   onLogout(event) {
+    const { logout } = this.props;
     event.preventDefault();
-    this.props.logout();
+    logout();
   }
 
   render() {
-    if (this.props.authenticated) {
+    const { credentials } = this.state;
+    const { authenticated, username } = this.props;
+    if (authenticated) {
       return (
         <form id="login">
           <div className="confirm">
             <InputField
               className="button button-primary button-logout"
               name="submit"
-              value={`Logout ${this.props.username}`}
+              value={`Logout ${username}`}
               onClick={this.onLogout}
             />
           </div>
@@ -67,12 +76,12 @@ class Login extends Component {
         <div className="credentials">
           <InputField
             name="username"
-            value={this.state.credentials.username}
+            value={credentials.username}
             onChange={this.onChange}
           />
           <InputField
             name="password"
-            value={this.state.credentials.password}
+            value={credentials.password}
             onChange={this.onChange}
           />
         </div>
@@ -94,21 +103,22 @@ Login.propTypes = {
   login: PropTypes.func.isRequired,
   logout: PropTypes.func.isRequired,
   logoutOnInvalidSession: PropTypes.func.isRequired,
-  username: PropTypes.string
+  username: PropTypes.string,
+  credentials: PropTypes.shape({
+    username: PropTypes.string,
+    password: PropTypes.string,
+  }),
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   authenticated: state.authentication.authenticated,
-  username: state.authentication.username
+  username: state.authentication.username,
 });
 
-const mapDispatchToProps = dispatch => ({
-  login: credentials => dispatch(loginUser(credentials)),
+const mapDispatchToProps = (dispatch) => ({
+  login: (credentials) => dispatch(loginUser(credentials)),
   logout: () => dispatch(logoutUser()),
-  logoutOnInvalidSession: () => dispatch(activeSessionCheck())
+  logoutOnInvalidSession: () => dispatch(activeSessionCheck()),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Login);
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

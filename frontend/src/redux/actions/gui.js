@@ -20,7 +20,7 @@ export function changeView(view = "all") {
 }
 
 export function renderAdd() {
-  return dispatch => {
+  return (dispatch) => {
     if (!validLogin()) {
       return dispatch(logoutUser());
     }

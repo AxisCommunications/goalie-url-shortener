@@ -8,7 +8,7 @@ import { validLogin, refreshSession, logoutUser } from "./authentication";
 // Setup basic api configuration
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 5000
+  timeout: 5000,
 });
 
 function buildRequestConfig(page, filter, sort, view, username) {
@@ -18,8 +18,8 @@ function buildRequestConfig(page, filter, sort, view, username) {
     method: "get",
     params: {
       page,
-      sort
-    }
+      sort,
+    },
   };
   if (view === "my") {
     const token = localStorage.getItem("token");
@@ -33,15 +33,15 @@ function buildRequestConfig(page, filter, sort, view, username) {
           {
             $or: [
               { pattern: { $regex: filter } },
-              { target: { $regex: filter } }
-            ]
+              { target: { $regex: filter } },
+            ],
           },
-          { ldapuser: username }
-        ]
+          { ldapuser: username },
+        ],
       };
     } else {
       config.params.where = {
-        $or: [{ pattern: { $regex: filter } }, { target: { $regex: filter } }]
+        $or: [{ pattern: { $regex: filter } }, { target: { $regex: filter } }],
       };
     }
   }
@@ -65,7 +65,7 @@ export function getShortcuts(page = 1) {
     return api
       .request(buildRequestConfig(page, filter, sort, view, username))
       .then(
-        response => {
+        (response) => {
           const perPage = parseInt(response.data._meta.max_results, 10);
           const total = parseInt(response.data._meta.total, 10);
           const pages = Math.ceil(total / perPage);
@@ -74,10 +74,10 @@ export function getShortcuts(page = 1) {
             type: types.SHORTCUTS_SUCCESS,
             items: response.data._items,
             pages,
-            page: currentPage
+            page: currentPage,
           });
         },
-        error => {
+        (error) => {
           dispatch({ type: types.SHORTCUTS_FAILURE });
           dispatch(setErrorWithTimeout(error));
         }
@@ -94,7 +94,7 @@ export function addShortcut(shortcut) {
 
     const {
       shortcuts: loading,
-      authentication: { username, authenticated }
+      authentication: { username, authenticated },
     } = getState();
     // const { loading } = shortcuts;
     // const { username, authenticated } = authentication;
@@ -109,25 +109,25 @@ export function addShortcut(shortcut) {
       method: "post",
       data: shortcut,
       headers: {
-        Authorization: `bearer ${localStorage.getItem("token")}`
-      }
+        Authorization: `bearer ${localStorage.getItem("token")}`,
+      },
     };
 
     return api.request(config).then(
-      response => {
+      (response) => {
         const responseShortcut = {
           _id: response.data._id,
           pattern: shortcut.pattern,
           target: shortcut.target,
-          ldapuser: username
+          ldapuser: username,
         };
         dispatch({ type: types.ADD_SHORTCUT_TOGGLE });
         return dispatch({
           type: types.ADD_SHORTCUT,
-          shortcut: responseShortcut
+          shortcut: responseShortcut,
         });
       },
-      error => dispatch(setErrorWithTimeout(error))
+      (error) => dispatch(setErrorWithTimeout(error))
     );
   };
 }
@@ -148,7 +148,7 @@ export function updateShortcut(shortcut) {
     }
 
     const { pattern, target } = shortcut;
-    const index = items.findIndex(item => item._id === shortcut._id);
+    const index = items.findIndex((item) => item._id === shortcut._id);
     const oldPattern = items[index].pattern;
 
     const config = {
@@ -156,17 +156,17 @@ export function updateShortcut(shortcut) {
       method: "patch",
       data: oldPattern === pattern ? { target } : { pattern, target },
       headers: {
-        Authorization: `bearer ${localStorage.getItem("token")}`
-      }
+        Authorization: `bearer ${localStorage.getItem("token")}`,
+      },
     };
 
     return api.request(config).then(
       () =>
         dispatch({
           type: types.UPDATE_SHORTCUT,
-          shortcut
+          shortcut,
         }),
-      error => dispatch(setErrorWithTimeout(error))
+      (error) => dispatch(setErrorWithTimeout(error))
     );
   };
 }
@@ -190,16 +190,14 @@ export function deleteShortcut(id) {
       url: `api/shortcuts/${id}`,
       method: "delete",
       headers: {
-        Authorization: `bearer ${localStorage.getItem("token")}`
-      }
+        Authorization: `bearer ${localStorage.getItem("token")}`,
+      },
     };
 
-    return api
-      .request(config)
-      .then(
-        () => dispatch({ type: types.DELETE_SHORTCUT, id }),
-        error => dispatch(setErrorWithTimeout(error))
-      );
+    return api.request(config).then(
+      () => dispatch({ type: types.DELETE_SHORTCUT, id }),
+      (error) => dispatch(setErrorWithTimeout(error))
+    );
   };
 }
 
@@ -210,7 +208,7 @@ export function sortResult(sort = "pattern") {
     }
     dispatch({
       type: types.SET_SORT,
-      sort
+      sort,
     });
     return dispatch(getShortcuts());
   };
@@ -224,7 +222,7 @@ export function filterResult(filter = "") {
     if (safe(filter)) {
       dispatch({
         type: types.SET_FILTER,
-        filter
+        filter,
       });
       return dispatch(getShortcuts());
     }

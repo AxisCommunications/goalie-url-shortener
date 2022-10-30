@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
@@ -16,7 +17,7 @@ class ShortcutItem extends Component {
       target: this.props.shortcut.target,
       // Moment.js supports RFC 822 date (RFC2822)
       date: moment(this.props.shortcut._updated),
-      id: this.props.shortcut._id
+      id: this.props.shortcut._id,
     };
     this.enterEdit = this.enterEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
@@ -37,7 +38,7 @@ class ShortcutItem extends Component {
     this.setState({
       editing: false,
       pattern: this.props.shortcut.pattern,
-      target: this.props.shortcut.target
+      target: this.props.shortcut.target,
     });
   }
 
@@ -46,7 +47,7 @@ class ShortcutItem extends Component {
       ...this.props.shortcut,
       pattern: this.state.pattern,
       target: this.state.target,
-      id: this.state.id
+      id: this.state.id,
     };
 
     if (
@@ -54,7 +55,7 @@ class ShortcutItem extends Component {
       shortcut.target === this.props.shortcut.target
     ) {
       this.setState({
-        editing: false
+        editing: false,
       });
       return;
     }
@@ -65,7 +66,7 @@ class ShortcutItem extends Component {
       ) {
         this.setState({
           editing: false,
-          date: moment()
+          date: moment(),
         });
       }
     });
@@ -98,7 +99,7 @@ class ShortcutItem extends Component {
                 className="button-cancel"
                 icon="cross"
                 onClick={this.cancelEdit}
-              />
+              />,
             ]
           ) : (
             <IconButton
@@ -122,7 +123,7 @@ class ShortcutItem extends Component {
           className="shortcut-edit"
           type="text"
           value={this.state[field]}
-          onChange={event => this.setState({ [field]: event.target.value })}
+          onChange={(event) => this.setState({ [field]: event.target.value })}
         />
       );
     }
@@ -158,31 +159,27 @@ ShortcutItem.propTypes = {
     _links: PropTypes.shape({
       self: PropTypes.shape({
         href: PropTypes.string,
-        title: PropTypes.string
-      })
+        title: PropTypes.string,
+      }),
     }),
     _updated: PropTypes.string,
     ldapuser: PropTypes.string.isRequired,
     pattern: PropTypes.string.isRequired,
-    target: PropTypes.string.isRequired
+    target: PropTypes.string.isRequired,
   }),
   updateShortcut: PropTypes.func.isRequired,
-  username: PropTypes.string.isRequired,
-  view: PropTypes.string.isRequired
+  view: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   view: state.gui.view,
   admin: state.authentication.admin,
-  username: state.authentication.username
+  username: state.authentication.username,
 });
 
-const mapDispatchToProps = dispatch => ({
-  deleteShortcut: id => dispatch(deleteShortcut(id)),
-  updateShortcut: shortcut => dispatch(updateShortcut(shortcut))
+const mapDispatchToProps = (dispatch) => ({
+  deleteShortcut: (id) => dispatch(deleteShortcut(id)),
+  updateShortcut: (shortcut) => dispatch(updateShortcut(shortcut)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(ShortcutItem);
+export default connect(mapStateToProps, mapDispatchToProps)(ShortcutItem);

@@ -7,7 +7,7 @@ import { trash } from "react-icons-kit/entypo/trash";
 import { pencil } from "react-icons-kit/entypo/pencil";
 
 export default function IconButton(props) {
-  const renderIcon = name => {
+  const renderIcon = (name) => {
     switch (name) {
       case "check":
         return <Icon icon={check} />;
@@ -21,14 +21,15 @@ export default function IconButton(props) {
         return null;
     }
   };
-
+  const { className, onClick, disabled, icon } = props;
   return (
     <button
-      className={`button icon ${props.className}`}
-      onClick={props.onClick}
-      disabled={props.disabled}
+      type="button"
+      className={`button icon ${className}`}
+      onClick={onClick}
+      disabled={disabled}
     >
-      {renderIcon(props.icon)}
+      {renderIcon(icon)}
     </button>
   );
 }
@@ -37,5 +38,5 @@ IconButton.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func,
   icon: PropTypes.string.isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
 };

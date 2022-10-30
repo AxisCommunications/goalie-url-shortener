@@ -15,32 +15,35 @@ class ShortcutsTable extends Component {
   }
 
   componentDidMount() {
-    this.props.fetchShortcuts();
+    const { fetchShortcuts } = this.props;
+    fetchShortcuts();
   }
 
   sort(order) {
-    if (order === this.props.sortOrder) {
-      this.props.sortShortcuts(`-${order}`);
+    const { sortOrder, sortShortcuts } = this.props;
+    if (order === sortOrder) {
+      sortShortcuts(`-${order}`);
     } else {
-      this.props.sortShortcuts(order);
+      sortShortcuts(order);
     }
   }
 
   shouldDisplayConfigure() {
-    return this.props.view === "my" || this.props.admin;
+    const { view, admin } = this.props;
+    return view === "my" || admin;
   }
 
   renderArrow(heading) {
-    if (this.props.sortOrder.includes(heading)) {
-      const arrow = this.props.sortOrder.includes("-")
-        ? sortAmountDesc
-        : sortAmountAsc;
+    const { sortOrder } = this.props;
+    if (sortOrder.includes(heading)) {
+      const arrow = sortOrder.includes("-") ? sortAmountDesc : sortAmountAsc;
       return <Icon icon={arrow} />;
     }
     return null;
   }
 
   render() {
+    const { shortcuts } = this.props;
     return (
       <div>
         <table className="u-full-width fixed">
@@ -75,7 +78,7 @@ class ShortcutsTable extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.props.shortcuts.map(shortcut => (
+            {shortcuts.map((shortcut) => (
               <ShortcutItem key={shortcut._id} shortcut={shortcut} />
             ))}
           </tbody>
@@ -88,25 +91,23 @@ class ShortcutsTable extends Component {
 ShortcutsTable.propTypes = {
   fetchShortcuts: PropTypes.func.isRequired,
   admin: PropTypes.bool,
+  // eslint-disable-next-line react/forbid-prop-types
   shortcuts: PropTypes.arrayOf(PropTypes.object).isRequired,
   sortOrder: PropTypes.string.isRequired,
   sortShortcuts: PropTypes.func.isRequired,
-  view: PropTypes.string.isRequired
+  view: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   shortcuts: state.shortcuts.items,
   sortOrder: state.shortcuts.sort,
   view: state.gui.view,
-  admin: state.authentication.admin
+  admin: state.authentication.admin,
 });
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   fetchShortcuts: () => dispatch(getShortcuts()),
-  sortShortcuts: sort => dispatch(sortResult(sort))
+  sortShortcuts: (sort) => dispatch(sortResult(sort)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(ShortcutsTable);
+export default connect(mapStateToProps, mapDispatchToProps)(ShortcutsTable);
