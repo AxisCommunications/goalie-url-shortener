@@ -41,10 +41,11 @@ class SearchBar extends Component {
     const { filter } = this.props;
     const { value } = this.state;
     let search = value;
+    search = search.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"); // Escape special characters
     try {
-      RegExp(value);
+      RegExp(search);
     } catch (error) {
-      search = encodeURI(value);
+      search = encodeURI(search);
     }
     filter(search);
   }
